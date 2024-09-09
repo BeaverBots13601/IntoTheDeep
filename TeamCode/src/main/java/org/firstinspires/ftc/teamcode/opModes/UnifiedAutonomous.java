@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.teamcode.Robot24_25;
 import org.firstinspires.ftc.teamcode.vision.AprilTagModule;
@@ -11,6 +10,9 @@ import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.Pr
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 import org.openftc.easyopencv.OpenCvCamera;
+
+import java.io.File;
+import java.io.FileWriter;
 
 @Autonomous(name="Automatic Autonomous")
 public class UnifiedAutonomous extends LinearOpMode {
@@ -24,7 +26,9 @@ public class UnifiedAutonomous extends LinearOpMode {
     private PropLocation propLocation;
     protected Locations currentLocation;
     private PropIdentificationVisualPipeline line;
+    private File headingFile = new File("robotHeading.txt");
     public void runOpMode(){
+        if(headingFile.exists()) headingFile.delete();
         if(currentLocation == null) currentLocation = Locations.Unknown;
         // Example autonomous code that can be used. Don't be afraid to expand or remodel it as needed
         Robot24_25 robot = new Robot24_25(this);
@@ -120,6 +124,14 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.turnDegrees(-90, 1);
                 break;
             }
+        }
+
+        // write our current heading, for use by field-oriented drivemodes later
+        try {
+            headingFile.createNewFile();
+            new FileWriter("robotHeading.txt").write(String.valueOf(robot.getImuAngle()));
+        } catch(Exception ignored) {
+            robot.writeToTelemetry("UH OH", "IO error when writing Robot Heading. Field-based drive-mode will be misaligned.");
         }
     }
 }

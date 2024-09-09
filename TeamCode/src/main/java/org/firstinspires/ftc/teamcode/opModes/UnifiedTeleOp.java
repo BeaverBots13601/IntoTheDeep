@@ -12,7 +12,11 @@ import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.Robot24_25;
 
-@TeleOp(name="TeleOp Controls"/* (Robot)"*/, group = "Competition")
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+@TeleOp(name="TeleOp Controls (Robot)", group = "Competition")
 public class UnifiedTeleOp extends LinearOpMode {
     private constants.DriveMode orientationMode = constants.DriveMode.ROBOT;
     private Robot24_25 typedRobot;
@@ -37,7 +41,12 @@ public class UnifiedTeleOp extends LinearOpMode {
 
         driveModeSwitch = hardwareMap.get(DigitalChannel.class, "switch");
         updateSwitchState();
-        double referenceAngle = robot.getImuAngle();
+        double referenceAngle;
+        try {
+            referenceAngle = (double) new FileReader("robotHeading.txt").read();
+        } catch (IOException ignored) {
+            referenceAngle = robot.getImuAngle();
+        }
         int tmp_deadzoneadjust = 2;
         previousGamepad.copy(currentGamepad);
 
@@ -126,10 +135,10 @@ class practiceBotOpmode extends UnifiedTeleOp {
     }
 }
 
-/*@TeleOp(name = "TeleOp Controls (Field)", group = "Competition")
+@TeleOp(name = "TeleOp Controls (Field)", group = "Competition")
 class fieldTeleOpOpmode extends UnifiedTeleOp {
     @Override
     public void runOpMode(){
         super.runOpMode(constants.DriveMode.FIELD);
     }
-}*/
+}
