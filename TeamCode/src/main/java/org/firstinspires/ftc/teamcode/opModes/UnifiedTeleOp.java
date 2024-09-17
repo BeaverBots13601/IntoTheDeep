@@ -9,12 +9,12 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
-import org.firstinspires.ftc.teamcode.Robot24_25;
+import org.firstinspires.ftc.teamcode.SeasonalRobot;
 
 @TeleOp(name="TeleOp Controls (Robot)", group = "Competition")
 public class UnifiedTeleOp extends LinearOpMode {
     protected constants.DriveMode orientationMode = constants.DriveMode.ROBOT;
-    private Robot24_25 typedRobot;
+    private SeasonalRobot typedRobot;
     private BaseRobot robot;
     private Gamepad currentGamepad = new Gamepad();
     private Gamepad previousGamepad = new Gamepad();
@@ -24,8 +24,8 @@ public class UnifiedTeleOp extends LinearOpMode {
         if (orientationMode == constants.DriveMode.RESTRICTED) {
             robot = new BaseRobot(this, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
         } else {
-            robot = new Robot24_25(this);
-            typedRobot = (Robot24_25) robot;
+            robot = new SeasonalRobot(this);
+            typedRobot = (SeasonalRobot) robot;
         }
 
         //driveModeSwitch = hardwareMap.get(DigitalChannel.class, "switch");
@@ -41,7 +41,7 @@ public class UnifiedTeleOp extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()) {
-            // if Robot24_25-specific functions are to be used here, check if typedRobot is null FIRST! (see updateButtons)
+            // if SeasonalRobot-specific functions are to be used here, check if typedRobot is null FIRST! (see updateButtons)
 
             currentGamepad.copy(gamepad1);
             updateButtons(currentGamepad);
@@ -103,7 +103,7 @@ public class UnifiedTeleOp extends LinearOpMode {
             constants.currentSpeedMode = constants.SPEEDS.CUSTOM_FTC_DASHBOARD;
         }
 
-        // After this, can use typedRobot
+        // After this, can use SeasonalRobot
         if (typedRobot == null) return;
     }
 
