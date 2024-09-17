@@ -3,16 +3,10 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.Robot24_25;
-import org.firstinspires.ftc.teamcode.vision.AprilTagModule;
+import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
-import org.firstinspires.ftc.teamcode.vision.AprilTagData;
-import org.openftc.easyopencv.OpenCvCamera;
-
-import java.io.File;
-import java.io.FileWriter;
 
 @Autonomous(name="Automatic Autonomous")
 public class UnifiedAutonomous extends LinearOpMode {
@@ -30,7 +24,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         constants.ROBOT_HEADING = 0;
         if(currentLocation == null) currentLocation = Locations.Unknown;
         // Example autonomous code that can be used. Don't be afraid to expand or remodel it as needed
-        Robot24_25 robot = new Robot24_25(this);
+        SeasonalRobot robot = new SeasonalRobot(this);
         sleep(1000);
 
         /* !! This code uses AprilTags to determine where we are starting on the field.
