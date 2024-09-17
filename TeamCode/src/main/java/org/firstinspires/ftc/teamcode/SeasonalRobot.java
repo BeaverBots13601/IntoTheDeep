@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-public class Robot24_25 extends BaseRobot { // todo rename?
-    public Robot24_25(LinearOpMode opmode) {
+public class SeasonalRobot extends BaseRobot {
+    public SeasonalRobot(LinearOpMode opmode) {
         super(opmode, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
         // setup specialized stuff
     }
