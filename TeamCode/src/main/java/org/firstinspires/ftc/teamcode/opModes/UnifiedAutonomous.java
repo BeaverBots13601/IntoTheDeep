@@ -26,9 +26,8 @@ public class UnifiedAutonomous extends LinearOpMode {
     private PropLocation propLocation;
     protected Locations currentLocation;
     private PropIdentificationVisualPipeline line;
-    private File headingFile = new File("robotHeading.txt");
     public void runOpMode(){
-        if(headingFile.exists()) headingFile.delete();
+        constants.ROBOT_HEADING = 0;
         if(currentLocation == null) currentLocation = Locations.Unknown;
         // Example autonomous code that can be used. Don't be afraid to expand or remodel it as needed
         Robot24_25 robot = new Robot24_25(this);
@@ -126,48 +125,7 @@ public class UnifiedAutonomous extends LinearOpMode {
             }
         }
 
-        // write our current heading, for use by field-oriented drivemodes later
-        try {
-            headingFile.createNewFile();
-            new FileWriter("robotHeading.txt").write(String.valueOf(robot.getImuAngle()));
-        } catch(Exception ignored) {
-            robot.writeToTelemetry("UH OH", "IO error when writing Robot Heading. Field-based drive-mode will be misaligned.");
-        }
-    }
-}
-
-@Autonomous(name = "Blue Far Autonomous", group = "Competition")
-class BlueFarAutonomous extends UnifiedAutonomous {
-    @Override
-    public void runOpMode() {
-        currentLocation = Locations.BlueFar;
-        super.runOpMode();
-    }
-}
-
-@Autonomous(name = "Red Far Autonomous", group = "Competition")
-class RedFarAutonomous extends UnifiedAutonomous {
-    @Override
-    public void runOpMode() {
-        currentLocation = Locations.RedFar;
-        super.runOpMode();
-    }
-}
-
-@Autonomous(name = "Blue Close Autonomous", group = "Competition")
-class BlueCloseAutonomous extends UnifiedAutonomous {
-    @Override
-    public void runOpMode() {
-        currentLocation = Locations.BlueClose;
-        super.runOpMode();
-    }
-}
-
-@Autonomous(name = "Red Close Autonomous", group = "Competition")
-class RedCloseAutonomous extends UnifiedAutonomous {
-    @Override
-    public void runOpMode() {
-        currentLocation = Locations.RedClose;
-        super.runOpMode();
+        // put our current heading in constants for field teleopmodes to read later
+        constants.ROBOT_HEADING = robot.getImuAngle();
     }
 }

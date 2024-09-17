@@ -17,7 +17,6 @@ public class constants {
     public static final double ENCODER_TICKS = 537.70; // changes if motor changes
     public static final int TELEMETRY_MS_TRANSMISSION_INTERVAL = 25; // no clue what this does tbh
 
-    // todo find way to condense these into single enum? or otherwise make not bad
     public enum SPEEDS {
         NORMAL(0.65),
         FAST(.80),
@@ -36,6 +35,8 @@ public class constants {
     public static double CUSTOM_FTC_DASHBOARD_SPEED = 0.65;
     // Default speed mode is set here; we can adjust it from FTCDashboard this way
     public static SPEEDS currentSpeedMode = SPEEDS.NORMAL;
+    // Heading global var
+    public static double ROBOT_HEADING = 0;
 
     // Camera data
     public static final String FRONT_CAMERA_NAME = "camera";
