@@ -119,7 +119,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         }*/
 
         // Driving to where we need to go
-        switch(currentLocation){
+        /*switch(currentLocation){
             case BlueClose: {
                 // Autonomous programs generally consist of these two commands:
                 robot.driveInches(12, 1);
@@ -141,6 +141,82 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.driveInches(-12, 1);
                 robot.turnDegrees(-90, 1);
                 break;
+            }
+        }*/
+
+        switch(currentLocation){
+            case RedClose:
+            case BlueClose: {
+                //under basket
+                //raise_arm
+                //open_hand
+                //lower_arm
+                robot.turnDegrees(90,.5);
+                for(int i = 0; i < 3; i++) {
+                    robot.driveInches(24, 1);
+                    //close_hand
+                    robot.turnDegrees(180, .5);
+                    robot.driveInches(24, 1);
+                    //open_hand
+                    robot.turnDegrees(180, .5);
+                }
+                robot.turnDegrees(45,.5);
+                robot.driveInches(48,1);
+                robot.turnDegrees(45,.5);
+                //robot_ascend
+                break;
+
+                // alternate
+                robot.turnDegrees(45,.5);
+                robot.driveInches(24,1);
+                robot.turnDegrees(45,.5);
+                robot.driveInches(8,1);
+                robot.turnDegrees(-45,.5);
+                //attach_specimen
+                robot.turnDegrees(90,.5);
+                robot.driveInches(48,1);
+                robot.turnDegrees(90,.5);
+                robot.driveInches(12,1);
+                robot.turnDegrees(-90,.5);
+                //close_hand
+                robot.turnDegrees(135,.5);
+                robot.driveInches(20,1);
+                robot.turnDegrees(135,.5);
+                //close_hand
+
+            }
+            case RedFar:
+            case BlueFar: {
+                //far from basket
+                robot.turnDegrees(-45, .5);
+                robot.driveInches(50., 1);
+                //attach_specimen
+                robot.turnDegrees(135, .5);
+                robot.driveInches(32,1);
+                //close_hand
+                robot.turnDegrees(90,.5);
+                robot.driveInches(36,1);
+                robot.turnDegrees(-90,.5);
+                break;
+
+                //alternate
+                robot.turnDegrees(-45,.5);
+                robot.driveInches(24,1);
+                robot.turnDegrees(-45,.5);
+                robot.driveInches(8,1);
+                robot.turnDegrees(90,.5);
+                //attach-specimen
+                robot.turnDegrees(-90,.5);
+                robot.driveInches(48,1);
+                robot.turnDegrees(-90,.5);
+                robot.turnDegrees(12,.5);
+                robot.turnDegrees(90,.5);
+                //close_hand
+                robot.turnDegrees(-135,.5);
+                robot.driveInches(20,1);
+                robot.turnDegrees(-135,.5);
+                //open_hand
+
             }
         }
 
