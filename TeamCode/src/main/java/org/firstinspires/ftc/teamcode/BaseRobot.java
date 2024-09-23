@@ -70,6 +70,10 @@ public class BaseRobot {
         updateTelemetry();
     }
 
+    /**
+     * Creates a default motor with the settings 'RUN_USING_ENCODER' and 'FLOAT on zero power'.
+     * Reverses if name includes left.
+     */
     protected DcMotorEx createDefaultMotor(String motorName) {
         DcMotorEx motor = this.opMode.hardwareMap.get(DcMotorEx.class, motorName);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
