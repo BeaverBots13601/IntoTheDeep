@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
 
-@Autonomous(name="Automatic Autonomous")
+@Autonomous(name="Automatic Autonomous", preselectTeleOp = "") // todo
 public class UnifiedAutonomous extends LinearOpMode {
     protected enum Locations {
         BlueClose,

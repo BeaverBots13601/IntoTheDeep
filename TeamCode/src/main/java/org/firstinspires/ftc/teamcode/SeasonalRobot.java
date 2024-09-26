@@ -1,20 +1,38 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
 
 public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx verticalArmMotor;
     private final DcMotorEx horizontalArmMotor;
+    private final Servo wristServo;
+    private final Servo clawMachineServo;
 
     public SeasonalRobot(LinearOpMode opmode) {
         super(opmode, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
         // setup specialized stuff
         verticalArmMotor = createDefaultMotor("VerticalArmMotor");
         horizontalArmMotor = createDefaultMotor("horizontalArmMotor");
+        wristServo = setUpServo("wristServo");
+        clawMachineServo = setUpServo("clawMachineServo");
+
+        /*
+        if this is within base position.. (excl. extending/retracting linear slide)
+
+        rotate wrist 90 deg up
+        move to where you want
+        rotate wrist 90 deg down
+        close claw machine
+        rotate wrist 90 deg up
+        go to where we want it
+        open claw
+         */
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
