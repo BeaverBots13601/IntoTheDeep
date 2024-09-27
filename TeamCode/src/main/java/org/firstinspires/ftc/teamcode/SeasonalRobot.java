@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ public class SeasonalRobot extends BaseRobot {
     private final Servo wristServo;
     private final Servo clawMachineServo;
     private final Servo specimenClawServo;
+    private final CRServo leftAscentServo;
+    private final CRServo rightAscentServo;
 
     public SeasonalRobot(LinearOpMode opmode) {
         super(opmode, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
@@ -25,6 +28,9 @@ public class SeasonalRobot extends BaseRobot {
         wristServo.setPosition(0); // shouldn't move if properly set
         clawMachineServo = setUpServo("clawMachineServo");
         specimenClawServo = setUpServo("specimenClawServo");
+        leftAscentServo = opmode.hardwareMap.get(CRServo.class, "leftAscentServo");
+        leftAscentServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightAscentServo = opmode.hardwareMap.get(CRServo.class, "rightAscentServo");
 
         /*
         How to get cube from submersible:
@@ -39,8 +45,6 @@ public class SeasonalRobot extends BaseRobot {
         go to where we want it
         openClaw()
          */
-
-        // also need to add shark-3s for l3 ascent hook
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -157,5 +161,16 @@ public class SeasonalRobot extends BaseRobot {
 
     public void openSpecimenClaw(){
         specimenClawServo.setPosition(0);
+    }
+
+    /**
+     * Once positioned, latches the hooks onto L3 the bar. Takes 2.5s.
+     */
+    public void latchAscentHooks(){
+        leftAscentServo.setPower(0.75);
+        rightAscentServo.setPower(0.75);
+        opMode.sleep(2500);
+        leftAscentServo.setPower(0);
+        rightAscentServo.setPower(0);
     }
 }
