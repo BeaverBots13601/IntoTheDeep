@@ -248,6 +248,10 @@ public class BaseRobot {
         return propID;
     }
 
+    /**
+     * Initialize a April Tag Scanning system with a custom dumb webcam. If you are using LimeLight, this is not the system you want.
+     * @return A reference to an AprilTagModule. Managed by the BaseRobot, so not required to store it yourself.
+     */
     public AprilTagModule initializeAprilTagScanner(WebcamName camera, int cameraWidthPx, int cameraHeightPx) {
         aprilTagModule = new AprilTagModule(camera, cameraWidthPx, cameraHeightPx);
         return aprilTagModule;
