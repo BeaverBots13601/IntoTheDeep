@@ -106,7 +106,7 @@ public class UnifiedTeleOp extends LinearOpMode {
     private void updateButtons() {
         // put button actions here in this format
 
-        // speed ctrls
+        // speed ctrls (gp 1)
         if (currentGamepadOne.dpad_up && !previousGamepadOne.dpad_up) {
             constants.currentSpeedMode = constants.SPEEDS.FAST;
         }
@@ -123,7 +123,7 @@ public class UnifiedTeleOp extends LinearOpMode {
         // After this, can use SeasonalRobot
         if (typedRobot == null) return;
 
-        // submersible grabber ctrls
+        // submersible grabber ctrls (gp 1)
         if (currentGamepadOne.options && !previousGamepadOne.options) {
             typedRobot.rotateWristDown();
         }
@@ -140,7 +140,7 @@ public class UnifiedTeleOp extends LinearOpMode {
             }
         }
 
-        // ascent ctrls
+        // ascent ctrls (gp 1)
         if (currentGamepadOne.square && !previousGamepadOne.square){ // l1 ascent
             typedRobot.latchLowerAscentHooks();
             typedRobot.reelLowerAscentHooks();
@@ -153,7 +153,7 @@ public class UnifiedTeleOp extends LinearOpMode {
             typedRobot.setVerticalArmPower(0);
         }
 
-        // wall specimen grabber ctrl
+        // wall specimen grabber ctrl (gp 2)
         if (currentGamepadTwo.options && !previousGamepadTwo.options){
             typedRobot.openSpecimenClaw();
         }
