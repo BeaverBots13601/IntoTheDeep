@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
+import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
@@ -72,28 +73,31 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         OpenCvCamera frontCamera = robot.getFrontCamera().setPipeline(line);*/
 
-        /* limelight apriltag
-        List<Integer> tags = robot.getLastLimelightAprilTags();
+        // limelight apriltag
+        List<AprilTagData> tags = robot.getLastLimelightAprilTags();
         int iterations2 = 0;
         while(tags.size() == 0 && iterations2 < 500){ sleep(10); iterations2++; tags = robot.getLastLimelightAprilTags(); }
+        AprilTagData max = new AprilTagData(); // default
+        for(AprilTagData tag : tags){
+            if(tag.getDist() > max.getDist()) max = tag;
+        }
 
-        if (tags.contains(14)) { // sees red wall tag
+
+        if (max.getId() == 14) { // sees red wall tag
             if(max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES){
-                currentLocation = Locations.RedClose; // tag far away, we are close to bb
+                currentLocation = Locations.RedFar; // tag far away
             } else {
-                currentLocation = Locations.RedFar; // tag nearby
+                currentLocation = Locations.RedClose; // tag nearby
             }
-        } else if (tag.contains(11) { // sees blue wall tag
-            if(max.getDist() == -10 || max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES) {
-                currentLocation = Locations.BlueFar; // inverse of blue because the camera is pointing at & reading bb now
-                // also the default case
+        } else if (max.getId() == 11) { // sees blue wall tag
+            if(max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES) {
+                currentLocation = Locations.BlueClose; // tag far away
             } else {
-                currentLocation = Locations.BlueClose; // tag nearby
+                currentLocation = Locations.BlueFar; // tag nearby
             }
         } else {
-            // uh oh
+            // uh oh todo make this case
         }
-        */
 
         waitForStart(); // setup done actually do things
 
@@ -145,8 +149,8 @@ public class UnifiedAutonomous extends LinearOpMode {
         }*/
 
         switch(currentLocation){
-            case RedClose:
-            case BlueClose: {
+            case RedFar:
+            case BlueFar: {
                 //under basket
                 //raise_arm
                 //open_hand
@@ -166,7 +170,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 //robot_ascend
                 break;
 
-                // alternate
+                /*// alternate
                 robot.turnDegrees(45,.5);
                 robot.driveInches(24,1);
                 robot.turnDegrees(45,.5);
@@ -182,14 +186,14 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.turnDegrees(135,.5);
                 robot.driveInches(20,1);
                 robot.turnDegrees(135,.5);
-                //close_hand
+                //close_hand*/
 
             }
-            case RedFar:
-            case BlueFar: {
+            case RedClose:
+            case BlueClose: {
                 //far from basket
                 robot.turnDegrees(-45, .5);
-                robot.driveInches(50., 1);
+                robot.driveInches(50, 1);
                 //attach_specimen
                 robot.turnDegrees(135, .5);
                 robot.driveInches(32,1);
@@ -199,7 +203,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.turnDegrees(-90,.5);
                 break;
 
-                //alternate
+                /*//alternate
                 robot.turnDegrees(-45,.5);
                 robot.driveInches(24,1);
                 robot.turnDegrees(-45,.5);
@@ -215,7 +219,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.turnDegrees(-135,.5);
                 robot.driveInches(20,1);
                 robot.turnDegrees(-135,.5);
-                //open_hand
+                //open_hand*/
 
             }
         }

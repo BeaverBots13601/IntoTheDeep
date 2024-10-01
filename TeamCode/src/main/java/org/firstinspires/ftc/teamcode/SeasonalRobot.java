@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.vision.AprilTagData;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,10 +203,10 @@ public class SeasonalRobot extends BaseRobot {
         rightUpperAscentMotor.setTargetPosition(0);
     }
 
-    public List<Integer> getLastLimelightAprilTags(){
-        List<Integer> out = new ArrayList<>();
+    public ArrayList<AprilTagData> getLastLimelightAprilTags(){
+        ArrayList<AprilTagData> out = new ArrayList<>();
 
-        limelight.getLatestResult().getFiducialResults().forEach((LLResultTypes.FiducialResult a) -> out.add(a.getFiducialId()));
+        limelight.getLatestResult().getFiducialResults().forEach((LLResultTypes.FiducialResult a) -> out.add(new AprilTagData(a.getFiducialId(), a.getTargetPoseRobotSpace().getPosition().z, 0)));
 
         return out;
     }
