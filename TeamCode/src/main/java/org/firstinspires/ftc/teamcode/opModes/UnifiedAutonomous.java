@@ -152,22 +152,25 @@ public class UnifiedAutonomous extends LinearOpMode {
             case RedFar:
             case BlueFar: {
                 //under basket
-                //raise_arm
-                //open_hand
-                //lower_arm
+                robot.turnDegrees(-90, .5);
+                robot.driveInches(24, 1);
+                robot.raiseVerticalArm();
+                robot.openSpecimenClaw();
+                robot.lowerVerticalArm();
                 robot.turnDegrees(90,.5);
-                for(int i = 0; i < 3; i++) {
+                /*for(int i = 0; i < 3; i++) { // samples - can't do this because of revised design
                     robot.driveInches(24, 1);
                     //close_hand
                     robot.turnDegrees(180, .5);
                     robot.driveInches(24, 1);
                     //open_hand
                     robot.turnDegrees(180, .5);
-                }
+                }*/
                 robot.turnDegrees(45,.5);
                 robot.driveInches(48,1);
                 robot.turnDegrees(45,.5);
-                //robot_ascend
+                robot.raiseVerticalArm();
+                robot.driveInches(6, .5);
                 break;
 
                 /*// alternate
@@ -194,13 +197,19 @@ public class UnifiedAutonomous extends LinearOpMode {
                 //far from basket
                 robot.turnDegrees(-45, .5);
                 robot.driveInches(50, 1);
-                //attach_specimen
-                robot.turnDegrees(135, .5);
-                robot.driveInches(32,1);
-                //close_hand
-                robot.turnDegrees(90,.5);
-                robot.driveInches(36,1);
-                robot.turnDegrees(-90,.5);
+                robot.turnDegrees(45, .5);
+                robot.raiseVerticalArm();
+                robot.driveInches(6, 1);
+                robot.openSpecimenClaw(); // this probably won't work, but bringing the arm down
+                // would break things. need a better way to control the arm
+                robot.driveInches(-18, 1);
+                robot.turnDegrees(90, .5);
+                robot.driveInches(38,1);
+                robot.turnDegrees(-90, .5);
+                robot.closeClawMachine();
+                robot.turnDegrees(180,.5);
+                robot.driveInches(40,1);
+                robot.openClawMachine();
                 break;
 
                 /*//alternate
