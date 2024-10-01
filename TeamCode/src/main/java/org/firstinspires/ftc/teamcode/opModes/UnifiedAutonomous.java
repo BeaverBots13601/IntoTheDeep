@@ -8,7 +8,9 @@ import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
 
-@Autonomous(name="Automatic Autonomous", preselectTeleOp = "") // todo
+import java.util.List;
+
+@Autonomous(name="Automatic Autonomous", preselectTeleOp = "UnifiedTeleOp")
 public class UnifiedAutonomous extends LinearOpMode {
     protected enum Locations {
         BlueClose,
@@ -69,6 +71,29 @@ public class UnifiedAutonomous extends LinearOpMode {
         }
 
         OpenCvCamera frontCamera = robot.getFrontCamera().setPipeline(line);*/
+
+        /* limelight apriltag
+        List<Integer> tags = robot.getLastLimelightAprilTags();
+        int iterations2 = 0;
+        while(tags.size() == 0 && iterations2 < 500){ sleep(10); iterations2++; tags = robot.getLastLimelightAprilTags(); }
+
+        if (tags.contains(14)) { // sees red wall tag
+            if(max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES){
+                currentLocation = Locations.RedClose; // tag far away, we are close to bb
+            } else {
+                currentLocation = Locations.RedFar; // tag nearby
+            }
+        } else if (tag.contains(11) { // sees blue wall tag
+            if(max.getDist() == -10 || max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES) {
+                currentLocation = Locations.BlueFar; // inverse of blue because the camera is pointing at & reading bb now
+                // also the default case
+            } else {
+                currentLocation = Locations.BlueClose; // tag nearby
+            }
+        } else {
+            // uh oh
+        }
+        */
 
         waitForStart(); // setup done actually do things
 

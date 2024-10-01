@@ -115,7 +115,7 @@ public class BaseRobot {
         return false;
     }
 
-    private double inchesToEncoder(double inches) {
+    protected double inchesToEncoder(double inches) {
         return (inches * constants.ENCODER_TICKS / (this.wheelDiameter * Math.PI));
     }
 

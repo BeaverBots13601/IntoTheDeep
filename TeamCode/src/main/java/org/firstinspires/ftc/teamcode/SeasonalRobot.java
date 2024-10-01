@@ -1,12 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx leftVerticalArmMotor;
@@ -17,6 +22,11 @@ public class SeasonalRobot extends BaseRobot {
     private final Servo specimenClawServo;
     private final CRServo leftAscentServo;
     private final CRServo rightAscentServo;
+    private final DcMotorEx leftUpperAscentMotor;
+    private final DcMotorEx rightUpperAscentMotor;
+
+    // candidate to be moved to base robot
+    private final Limelight3A limelight;
 
     public SeasonalRobot(LinearOpMode opmode) {
         super(opmode, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
@@ -31,7 +41,13 @@ public class SeasonalRobot extends BaseRobot {
         leftAscentServo = opmode.hardwareMap.get(CRServo.class, "leftAscentServo");
         leftAscentServo.setDirection(DcMotorSimple.Direction.REVERSE);
         rightAscentServo = opmode.hardwareMap.get(CRServo.class, "rightAscentServo");
+        leftUpperAscentMotor = createDefaultMotor("leftUpperAscentMotor");
+        leftUpperAscentMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightUpperAscentMotor = createDefaultMotor("rightUpperAscentMotor");
+        rightUpperAscentMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.start();
         /*
         How to get cube from submersible:
 
@@ -137,21 +153,11 @@ public class SeasonalRobot extends BaseRobot {
     }
 
     /**
-     * Extends the horizontal arm, up to the maximum extension length.
-     * @param speed The speed to run at. No limiter. Keep in mind the maximum physical servo rotation speed.
+     * Changes the speed of the horizontal arm servo. Bear in mind the maximum extension distance before damage.
      */
-    public void extendHorizontalArm(float speed){
-        // todo this doesn't work. needs some way to set distance
+    public void setHorizontalArmPower(float speed){
+        // todo needs some way to set/limit distance
         horizontalArmServo.setPower(speed);
-    }
-
-    /**
-     * Retracts the horizontal arm, up to the minimum extension length.
-     * @param speed The speed to run at. No limiter. Keep in mind the maximum physical servo rotation speed.
-     */
-    public void retractHorizontalArm(float speed){
-        // todo this doesn't work. needs some way to set distance
-        horizontalArmServo.setPower(-speed);
     }
 
     public void closeSpecimenClaw(){
@@ -166,11 +172,45 @@ public class SeasonalRobot extends BaseRobot {
     /**
      * Once positioned, latches the hooks onto L3 the bar. Takes 2.5s.
      */
-    public void latchAscentHooks(){
+    public void latchLowerAscentHooks(){
         leftAscentServo.setPower(0.75);
         rightAscentServo.setPower(0.75);
         opMode.sleep(2500);
         leftAscentServo.setPower(0);
         rightAscentServo.setPower(0);
+    }
+
+    public void reelLowerAscentHooks(){
+        leftAscentServo.setPower(-0.75);
+        rightAscentServo.setPower(-0.75);
+        opMode.sleep(3000);
+        leftAscentServo.setPower(0);
+        rightAscentServo.setPower(0);
+    }
+
+    public void upperAscentMotorsToLatched(){
+        leftUpperAscentMotor.setTargetPosition(-285);
+        rightUpperAscentMotor.setTargetPosition(285);
+        while (leftUpperAscentMotor.isBusy()){
+            opMode.sleep(5);
+        }
+    }
+
+    public void pullUpperAscentMotors(){
+        leftUpperAscentMotor.setTargetPosition(0);
+        rightUpperAscentMotor.setTargetPosition(0);
+    }
+
+    public List<Integer> getLastLimelightAprilTags(){
+        List<Integer> out = new ArrayList<>();
+
+        limelight.getLatestResult().getFiducialResults().forEach((LLResultTypes.FiducialResult a) -> out.add(a.getFiducialId()));
+
+        return out;
+    }
+
+    public void setVerticalArmPower(float speed){
+        leftVerticalArmMotor.setPower(speed);
+        rightVerticalArmMotor.setPower(speed);
     }
 }
