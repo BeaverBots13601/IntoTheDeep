@@ -16,8 +16,10 @@ public class UnifiedTeleOp extends LinearOpMode {
     protected constants.DriveMode orientationMode = constants.DriveMode.ROBOT;
     private SeasonalRobot typedRobot;
     private BaseRobot robot;
-    private Gamepad currentGamepad = new Gamepad();
-    private Gamepad previousGamepad = new Gamepad();
+    private Gamepad currentGamepadOne = new Gamepad();
+    private Gamepad previousGamepadOne = new Gamepad();
+    private Gamepad currentGamepadTwo = new Gamepad();
+    private Gamepad previousGamepadTwo = new Gamepad();
     private DigitalChannel driveModeSwitch;
 
     public void runOpMode() {
@@ -37,14 +39,14 @@ public class UnifiedTeleOp extends LinearOpMode {
             referenceAngle = robot.getImuAngle();
         }
         int tmp_deadzoneadjust = 2;
-        previousGamepad.copy(currentGamepad);
+        previousGamepadOne.copy(currentGamepadOne);
+        previousGamepadTwo.copy(currentGamepadTwo);
 
         waitForStart();
         while (opModeIsActive()) {
-            // if SeasonalRobot-specific functions are to be used here, check if typedRobot is null FIRST! (see updateButtons)
-
-            currentGamepad.copy(gamepad1);
-            updateButtons(currentGamepad);
+            currentGamepadOne.copy(gamepad1);
+            currentGamepadTwo.copy(gamepad2);
+            updateButtons();
             //updateSwitchState();
 
             double speedNow = constants.currentSpeedMode.getNumericalSpeed();
@@ -82,29 +84,82 @@ public class UnifiedTeleOp extends LinearOpMode {
 
             robot.setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_USING_ENCODER);
 
-            robot.updateTelemetry();
+            previousGamepadOne.copy(currentGamepadOne);
+            previousGamepadTwo.copy(currentGamepadTwo);
 
-            previousGamepad.copy(currentGamepad);
+            // After this, can use SeasonalRobot
+            if(typedRobot == null) continue;
+
+            // horizontal arm (gp 2)
+            robot.writeToTelemetry("Horizontal Arm Power", currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
+            typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
+
+            // vertical arm (gp 1)
+            robot.writeToTelemetry("Vertical Arm Power", currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
+            typedRobot.setVerticalArmPower(currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
+
+            robot.updateTelemetry();
         }
     }
 
-    private void updateButtons(Gamepad currentGamepad) {
+    private boolean clawMachineOpen = true;
+    private void updateButtons() {
         // put button actions here in this format
-        if (currentGamepad.dpad_up && !previousGamepad.dpad_up) {
+
+        // speed ctrls
+        if (currentGamepadOne.dpad_up && !previousGamepadOne.dpad_up) {
             constants.currentSpeedMode = constants.SPEEDS.FAST;
         }
-        if (currentGamepad.dpad_right && !previousGamepad.dpad_right) {
+        if (currentGamepadOne.dpad_right && !previousGamepadOne.dpad_right) {
             constants.currentSpeedMode = constants.SPEEDS.NORMAL;
         }
-        if (currentGamepad.dpad_down && !previousGamepad.dpad_down) {
+        if (currentGamepadOne.dpad_down && !previousGamepadOne.dpad_down) {
             constants.currentSpeedMode = constants.SPEEDS.SLOW;
         }
-        if (currentGamepad.dpad_left && !previousGamepad.dpad_left && robot.isDashboardEnabled()) {
+        if (currentGamepadOne.dpad_left && !previousGamepadOne.dpad_left && robot.isDashboardEnabled()) {
             constants.currentSpeedMode = constants.SPEEDS.CUSTOM_FTC_DASHBOARD;
         }
 
         // After this, can use SeasonalRobot
         if (typedRobot == null) return;
+
+        // submersible grabber ctrls
+        if (currentGamepadOne.options && !previousGamepadOne.options) {
+            typedRobot.rotateWristDown();
+        }
+        if (currentGamepadOne.share && !previousGamepadOne.share) {
+            typedRobot.rotateWristUp();
+        }
+        if (currentGamepadOne.triangle && !previousGamepadOne.triangle) {
+            if (clawMachineOpen){
+                typedRobot.closeClawMachine();
+                clawMachineOpen = false;
+            } else {
+                typedRobot.openClawMachine();
+                clawMachineOpen = true;
+            }
+        }
+
+        // ascent ctrls
+        if (currentGamepadOne.square && !previousGamepadOne.square){ // l1 ascent
+            typedRobot.latchLowerAscentHooks();
+            typedRobot.reelLowerAscentHooks();
+        }
+        if (currentGamepadOne.circle && !previousGamepadOne.circle){ // l2 ascent
+            typedRobot.upperAscentMotorsToLatched();
+            typedRobot.setVerticalArmPower(-0.75f);
+            typedRobot.pullUpperAscentMotors();
+            sleep(2500);
+            typedRobot.setVerticalArmPower(0);
+        }
+
+        // wall specimen grabber ctrl
+        if (currentGamepadTwo.options && !previousGamepadTwo.options){
+            typedRobot.openSpecimenClaw();
+        }
+        if (currentGamepadTwo.share && !previousGamepadTwo.share){
+            typedRobot.closeSpecimenClaw();
+        }
     }
 
     private void updateSwitchState() {
