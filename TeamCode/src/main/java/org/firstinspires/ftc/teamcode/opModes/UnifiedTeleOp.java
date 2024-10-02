@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
@@ -97,6 +98,11 @@ public class UnifiedTeleOp extends LinearOpMode {
             // vertical arm (gp 1)
             robot.writeToTelemetry("Vertical Arm Power", currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
             typedRobot.setVerticalArmPower(currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
+
+            // update limelight imu data
+            typedRobot.updateLimelightIMUData();
+            Position a = typedRobot.getLimelightPositionalData();
+            robot.writeRobotPositionToTelemetry(a.x, a.z);
 
             robot.updateTelemetry();
         }
