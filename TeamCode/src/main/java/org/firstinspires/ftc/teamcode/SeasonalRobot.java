@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,10 +9,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx leftVerticalArmMotor;
@@ -93,7 +92,7 @@ public class SeasonalRobot extends BaseRobot {
      * TODO these might have to be refactored to allow arbitrary heights within Auto :(
      */
     public void raiseVerticalArm(){
-        ArrayList<Integer> lastFiveChanges = new ArrayList<Integer>(5);
+        ArrayList<Integer> lastFiveChanges = new ArrayList<>(5);
         float avgChange = 999;
         int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
 
@@ -125,7 +124,7 @@ public class SeasonalRobot extends BaseRobot {
      * Lower the Vertical Arm to its minimum height. Takes at least 550ms to end.
      */
     public void lowerVerticalArm(){
-        ArrayList<Integer> lastFiveChanges = new ArrayList<Integer>(5);
+        ArrayList<Integer> lastFiveChanges = new ArrayList<>(5);
         float avgChange = 999;
         int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
 
@@ -209,6 +208,14 @@ public class SeasonalRobot extends BaseRobot {
         limelight.getLatestResult().getFiducialResults().forEach((LLResultTypes.FiducialResult a) -> out.add(new AprilTagData(a.getFiducialId(), a.getTargetPoseRobotSpace().getPosition().z, 0)));
 
         return out;
+    }
+
+    public void updateLimelightIMUData(){
+        limelight.updateRobotOrientation(getImuAngle());
+    }
+
+    public Position getLimelightPositionalData() {
+        return limelight.getLatestResult().getBotpose_MT2().getPosition();
     }
 
     public void setVerticalArmPower(float speed){

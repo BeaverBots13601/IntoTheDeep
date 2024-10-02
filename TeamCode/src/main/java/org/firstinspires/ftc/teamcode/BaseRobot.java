@@ -214,6 +214,10 @@ public class BaseRobot {
         packet = new TelemetryPacket();
     }
 
+    public void writeRobotPositionToTelemetry(double x, double y){
+        packet.field().fillRect(x, y, 10, 10);
+    }
+
     protected OpenCvCamera setUpCamera(String cameraName, int cameraWidth, int cameraHeight, OpenCvCameraRotation orientation) {
         WebcamName cameraNameThing = opMode.hardwareMap.get(WebcamName.class, cameraName);
         OpenCvCamera webcam = OpenCvCameraFactory.getInstance().createWebcam(cameraNameThing);
