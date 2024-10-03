@@ -200,8 +200,8 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.turnDegrees(45, .5);
                 robot.raiseVerticalArm();
                 robot.driveInches(6, 1);
-                robot.openSpecimenClaw(); // this probably won't work, but bringing the arm down
-                // would break things. need a better way to control the arm
+                robot.raiseVerticalArmsToHeight(0.5); // todo adjust me also calibrate arms
+                robot.openSpecimenClaw();
                 robot.driveInches(-18, 1);
                 robot.turnDegrees(90, .5);
                 robot.driveInches(38,1);

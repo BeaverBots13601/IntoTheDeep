@@ -154,6 +154,25 @@ public class SeasonalRobot extends BaseRobot {
     }
 
     /**
+     * Raises the arms to a specific height. Might not work the best?
+     * @param height The height to raise it to, in a percentage. [0, 1]
+     */
+    public void raiseVerticalArmsToHeight(double height){
+        DcMotor.RunMode before = leftVerticalArmMotor.getMode();
+
+        leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        rightVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_VERTICALS_HEIGHT_TICKS * height));
+        leftVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_VERTICALS_HEIGHT_TICKS * height));
+
+        while (rightVerticalArmMotor.isBusy());
+
+        leftVerticalArmMotor.setMode(before);
+        rightVerticalArmMotor.setMode(before);
+    }
+
+    /**
      * Changes the speed of the horizontal arm servo. Bear in mind the maximum extension distance before damage.
      */
     public void setHorizontalArmPower(float speed){
