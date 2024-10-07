@@ -30,12 +30,11 @@ public class AprilTagModule {
      */
     public AprilTagModule(WebcamName cameraNameObject, int cameraWidth, int cameraHeight){
         aprilTag = new AprilTagProcessor.Builder()
-                .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11) // todo might need to change yearly?
-                .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary()) // todo definitely needs to change yearly
+                .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                .setTagLibrary(AprilTagGameDatabase.getCurrentGameTagLibrary())
                 .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES) // ang unit doesn't matter
                 .setLensIntrinsics(1500.35, 1500.35, 961.278, 563.176) // todo needs recalibration if new camera
                 .build();
-        //aprilTag.setDecimation(); // todo me
 
         VisionPortalEx.Builder builder = new VisionPortalEx.Builder();
         builder.setCamera(cameraNameObject);

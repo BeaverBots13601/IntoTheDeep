@@ -89,7 +89,6 @@ public class SeasonalRobot extends BaseRobot {
 
     /**
      * Raise the Vertical Arm to its maximum height. Takes at least 550ms to end.
-     * TODO these might have to be refactored to allow arbitrary heights within Auto :(
      */
     public void raiseVerticalArm(){
         ArrayList<Integer> lastFiveChanges = new ArrayList<>(5);

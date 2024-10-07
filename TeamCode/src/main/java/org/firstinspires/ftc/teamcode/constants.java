@@ -58,8 +58,8 @@ public class constants {
     public static double COLOR_UNKNOWN_THRESHOLD_PERCENT = 0.1;
     public static double DETECTION_BOX_OFFSET_SIDES_PX = 128;
 
-    public static final double ROBOT_CIRCUMFERENCE = 98.19; // todo might change with new base
-    // todo these def need to change
+    public static final double ROBOT_CIRCUMFERENCE = 98.19;
+    // these may need to be recalibrated eventually
     public static final double WHEEL_DIAMETER = 3.5;
     public static final double ROBOT_DIAMETER = 13.75;
 
