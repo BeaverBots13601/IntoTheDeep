@@ -101,8 +101,8 @@ public class UnifiedTeleOp extends LinearOpMode {
 
             // update limelight imu data
             typedRobot.updateLimelightIMUData();
-            Position a = typedRobot.getLimelightPositionalData();
-            robot.writeRobotPositionToTelemetry(a.x, a.z);
+            Pose a = typedRobot.getLimelightPositionalData();
+            robot.writeRobotPositionToTelemetry(a.getX(), a.getY());
 
             robot.updateTelemetry();
         }

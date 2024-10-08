@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.misc;
 
 
 /**
- * Object to conveniently manage position data.
+ * Object to conveniently manage position data. By standard, units should be in inches
  */
 public class Pose {
     private final double x;
@@ -54,4 +54,19 @@ public class Pose {
         }
         return angle;
     }
+
+
+    public static double xTolerance = 0.1;
+    public static double yTolerance = 0.1;
+    public static double angleTolerance = Math.PI / 32;
+
+    public boolean isAtPoseWithinTolerance(Pose currentPose){
+        if(Math.abs(x - currentPose.getX()) < xTolerance) return false;
+        if(Math.abs(y - currentPose.getY()) < yTolerance) return false;
+        if(Math.abs(angle - currentPose.getAngle()) < angleTolerance) return false;
+
+        return true;
+    }
+
+
 }

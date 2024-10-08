@@ -9,22 +9,26 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 
 import java.util.ArrayList;
 
 public class SeasonalRobot extends BaseRobot {
-    private final DcMotorEx leftVerticalArmMotor;
-    private final DcMotorEx rightVerticalArmMotor;
-    private final CRServo horizontalArmServo;
-    private final Servo wristServo;
-    private final Servo clawMachineServo;
-    private final Servo specimenClawServo;
-    private final CRServo leftAscentServo;
-    private final CRServo rightAscentServo;
-    private final DcMotorEx leftUpperAscentMotor;
-    private final DcMotorEx rightUpperAscentMotor;
+    private final DcMotorEx leftVerticalArmMotor = null;
+    private final DcMotorEx rightVerticalArmMotor = null;
+    private final CRServo horizontalArmServo = null;
+    private final Servo wristServo = null;
+    private final Servo clawMachineServo = null;
+    private final Servo specimenClawServo = null;
+    private final CRServo leftAscentServo = null;
+    private final CRServo rightAscentServo = null;
+    private final DcMotorEx leftUpperAscentMotor = null;
+    private final DcMotorEx rightUpperAscentMotor = null;
 
     // candidate to be moved to base robot
     private final Limelight3A limelight;
@@ -32,7 +36,7 @@ public class SeasonalRobot extends BaseRobot {
     public SeasonalRobot(LinearOpMode opmode) {
         super(opmode, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
         // setup specialized stuff
-        leftVerticalArmMotor = createDefaultMotor("leftVerticalArmMotor");
+        /*leftVerticalArmMotor = createDefaultMotor("leftVerticalArmMotor");
         rightVerticalArmMotor = createDefaultMotor("rightVerticalArmMotor");
         horizontalArmServo = opmode.hardwareMap.get(CRServo.class, "horizontalArmServo");
         wristServo = setUpServo("wristServo");
@@ -45,7 +49,7 @@ public class SeasonalRobot extends BaseRobot {
         leftUpperAscentMotor = createDefaultMotor("leftUpperAscentMotor");
         leftUpperAscentMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightUpperAscentMotor = createDefaultMotor("rightUpperAscentMotor");
-        rightUpperAscentMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightUpperAscentMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
 
         limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
         limelight.start();
@@ -232,8 +236,13 @@ public class SeasonalRobot extends BaseRobot {
         limelight.updateRobotOrientation(getImuAngle());
     }
 
-    public Position getLimelightPositionalData() {
-        return limelight.getLatestResult().getBotpose_MT2().getPosition();
+    /**
+     * Results in inches
+     * @return
+     */
+    public Pose getLimelightPositionalData() {
+        Pose3D a = limelight.getLatestResult().getBotpose_MT2();
+        return new Pose(a.getPosition().toUnit(DistanceUnit.INCH).x, a.getPosition().toUnit(DistanceUnit.INCH).z, a.getOrientation().getYaw(AngleUnit.RADIANS));
     }
 
     public void setVerticalArmPower(float speed){
