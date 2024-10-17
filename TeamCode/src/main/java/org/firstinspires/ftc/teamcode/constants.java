@@ -9,11 +9,6 @@ public class constants {
         leftFront, leftBack, rightFront, rightBack
 
     }
-    public enum DriveMode {
-        FIELD,
-        ROBOT,
-        RESTRICTED
-    }
     public static final double ENCODER_TICKS = 537.70; // changes if motor changes
     public static final int TELEMETRY_MS_TRANSMISSION_INTERVAL = 25; // no clue what this does tbh
 

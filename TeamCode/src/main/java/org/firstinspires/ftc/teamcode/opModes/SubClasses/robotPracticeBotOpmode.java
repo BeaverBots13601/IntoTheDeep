@@ -5,12 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.opModes.UnifiedTeleOp;
 
-@TeleOp(name = "TeleOp Controls (Field)", group = "Competition")
-public class fieldTeleOpOpmode extends UnifiedTeleOp {
+@TeleOp(name = "Practice Bot TeleOp (Robot)", group = "Testing")
+public class robotPracticeBotOpmode extends UnifiedTeleOp {
     @Override
-    public void runOpMode(){
-        this.orientationMode = DriveMode.FIELD;
-        this.configurationMode = RobotConfiguration.FULL;
+    public void runOpMode() {
+        this.orientationMode = DriveMode.ROBOT;
+        this.configurationMode = RobotConfiguration.RESTRICTED;
         super.runOpMode();
     }
 }

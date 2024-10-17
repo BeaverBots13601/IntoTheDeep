@@ -12,26 +12,34 @@ import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
 
-@TeleOp(name="TeleOp Controls (Robot)", group = "Competition")
-public class UnifiedTeleOp extends LinearOpMode {
-    protected constants.DriveMode orientationMode = constants.DriveMode.ROBOT;
+public abstract class UnifiedTeleOp extends LinearOpMode {
+    /** This field may be immediately changed by the switch state update. */
+    protected DriveMode orientationMode = DriveMode.ROBOT;
+    protected RobotConfiguration configurationMode = RobotConfiguration.RESTRICTED;
     private SeasonalRobot typedRobot;
     private BaseRobot robot;
     private Gamepad currentGamepadOne = new Gamepad();
     private Gamepad previousGamepadOne = new Gamepad();
     private Gamepad currentGamepadTwo = new Gamepad();
     private Gamepad previousGamepadTwo = new Gamepad();
-    private DigitalChannel driveModeSwitch;
+
+    protected enum RobotConfiguration {
+        RESTRICTED,
+        FULL
+    }
+    protected enum DriveMode {
+        FIELD,
+        ROBOT
+    }
 
     public void runOpMode() {
-        if (orientationMode == constants.DriveMode.RESTRICTED) {
+        if (configurationMode == RobotConfiguration.RESTRICTED) {
             robot = new BaseRobot(this, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
         } else {
             robot = new SeasonalRobot(this);
             typedRobot = (SeasonalRobot) robot;
         }
 
-        //driveModeSwitch = hardwareMap.get(DigitalChannel.class, "switch");
         //updateSwitchState();
         double referenceAngle;
         if(constants.ROBOT_HEADING != 0){
@@ -48,7 +56,7 @@ public class UnifiedTeleOp extends LinearOpMode {
             currentGamepadOne.copy(gamepad1);
             currentGamepadTwo.copy(gamepad2);
             updateButtons();
-            //updateSwitchState();
+            updateSwitchState(robot.getSwitchState());
 
             double speedNow = constants.currentSpeedMode.getNumericalSpeed();
 
@@ -57,7 +65,7 @@ public class UnifiedTeleOp extends LinearOpMode {
             float stickRotation = gamepad1.right_stick_x * tmp_deadzoneadjust;
 
             double directionRotation = 0;
-            if (orientationMode == constants.DriveMode.FIELD) {
+            if (orientationMode == DriveMode.FIELD) {
                 directionRotation = -Pose.normalizeAngle(robot.getImuAngle() - referenceAngle);
             }
 
@@ -168,14 +176,12 @@ public class UnifiedTeleOp extends LinearOpMode {
         }
     }
 
-    private void updateSwitchState() {
-        if (orientationMode != constants.DriveMode.RESTRICTED) {
-            if (driveModeSwitch.getState()) {
-                // completely arbitrary
-                orientationMode = constants.DriveMode.FIELD;
-            } else {
-                orientationMode = constants.DriveMode.ROBOT;
-            }
+    private void updateSwitchState(boolean switchState) {
+        if (switchState) {
+            // if no switch is attached, fall back to robot mode.
+            orientationMode = DriveMode.ROBOT;
+        } else {
+            orientationMode = DriveMode.FIELD;
         }
     }
 }
