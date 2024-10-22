@@ -73,30 +73,36 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         OpenCvCamera frontCamera = robot.getFrontCamera().setPipeline(line);*/
 
-        // limelight apriltag
-        List<AprilTagData> tags = robot.getLastLimelightAprilTags();
-        int iterations2 = 0;
-        while(tags.size() == 0 && iterations2 < 500){ sleep(10); iterations2++; tags = robot.getLastLimelightAprilTags(); }
-        AprilTagData max = new AprilTagData(); // default
-        for(AprilTagData tag : tags){
-            if(tag.getDist() > max.getDist()) max = tag;
-        }
+        if(currentLocation == Locations.Unknown) {
+            // limelight apriltag
+            List<AprilTagData> tags = robot.getLastLimelightAprilTags();
+            int iterations2 = 0;
+            while (tags.size() == 0 && iterations2 < 500) {
+                sleep(10);
+                iterations2++;
+                tags = robot.getLastLimelightAprilTags();
+            }
+            AprilTagData max = new AprilTagData(); // default
+            for (AprilTagData tag : tags) {
+                if (tag.getDist() > max.getDist()) max = tag;
+            }
 
 
-        if (max.getId() == 14) { // sees red wall tag
-            if(max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES){
-                currentLocation = Locations.RedFar; // tag far away
+            if (max.getId() == 14) { // sees red wall tag
+                if (max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES) {
+                    currentLocation = Locations.RedFar; // tag far away
+                } else {
+                    currentLocation = Locations.RedClose; // tag nearby
+                }
+            } else if (max.getId() == 11) { // sees blue wall tag
+                if (max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES) {
+                    currentLocation = Locations.BlueClose; // tag far away
+                } else {
+                    currentLocation = Locations.BlueFar; // tag nearby
+                }
             } else {
-                currentLocation = Locations.RedClose; // tag nearby
+                // uh oh todo make this case
             }
-        } else if (max.getId() == 11) { // sees blue wall tag
-            if(max.getDist() > constants.APRILTAG_DISTANCE_DETERMINATION_THRESHOLD_INCHES) {
-                currentLocation = Locations.BlueClose; // tag far away
-            } else {
-                currentLocation = Locations.BlueFar; // tag nearby
-            }
-        } else {
-            // uh oh todo make this case
         }
 
         waitForStart(); // setup done actually do things

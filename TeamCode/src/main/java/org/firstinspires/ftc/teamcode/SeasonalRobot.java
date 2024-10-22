@@ -14,6 +14,11 @@ import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 
 import java.util.ArrayList;
 
+/*
+    - All motors have std ratio
+    - Bottom servos have 24 RPM
+    - Panic servo, Power servos, and upper ascent motors
+*/
 public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx leftVerticalArmMotor;
     private final DcMotorEx rightVerticalArmMotor;
@@ -25,6 +30,7 @@ public class SeasonalRobot extends BaseRobot {
     private final CRServo rightAscentServo;
     private final DcMotorEx leftUpperAscentMotor;
     private final DcMotorEx rightUpperAscentMotor;
+    private final CRServo panicServo;
 
     // candidate to be moved to base robot
     private final Limelight3A limelight;
@@ -36,32 +42,21 @@ public class SeasonalRobot extends BaseRobot {
         rightVerticalArmMotor = createDefaultMotor("rightVerticalArmMotor");
         horizontalArmServo = opmode.hardwareMap.get(CRServo.class, "horizontalArmServo");
         wristServo = setUpServo("wristServo");
-        wristServo.setPosition(0); // shouldn't move if properly set
         clawMachineServo = setUpServo("clawMachineServo");
         specimenClawServo = setUpServo("specimenClawServo");
         leftAscentServo = opmode.hardwareMap.get(CRServo.class, "leftAscentServo");
-        leftAscentServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftAscentServo.setDirection(DcMotorSimple.Direction.REVERSE); // ?
         rightAscentServo = opmode.hardwareMap.get(CRServo.class, "rightAscentServo");
         leftUpperAscentMotor = createDefaultMotor("leftUpperAscentMotor");
-        leftUpperAscentMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightUpperAscentMotor = createDefaultMotor("rightUpperAscentMotor");
-        rightUpperAscentMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        panicServo = opmode.hardwareMap.get(CRServo.class, "panicServo");
 
         limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
         limelight.start();
-        /*
-        How to get cube from submersible:
 
-        rotateWristUp()
-        extendHorizontalArm()
-        adjust to where you want
-        rotateWristDown()
-        closeClaw()
-        rotateWristUp()
-        retractHorizontalArm()
-        go to where we want it
-        openClaw()
-         */
+        //wristServo.setPosition(0.31); // angles down. NOTE this breaks the Shark-2 horizontal servo
+        // for some ungodly reason. It just makes it spin constantly. Not anyones fault (except ftc maybe)
+        // do not comment this in unless something has changed.
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -69,14 +64,27 @@ public class SeasonalRobot extends BaseRobot {
     won't need that next year probably, put it here.
     */
 
+    private enum wristPos {
+        UP,
+        MID,
+        DOWN
+    }
+    private wristPos currentPos = wristPos.DOWN;
+
     public void rotateWristDown(){
-        wristServo.setPosition(0);
-        // 0 has been mechanically-aligned to be facing down on the bot (thx philip)
+        if(currentPos == wristPos.UP){
+            wristServo.setPosition(0.31 / 2); // 45 DEG
+            currentPos = wristPos.MID;
+        } else {
+            wristServo.setPosition(0.31); // 90 DEG
+            currentPos = wristPos.DOWN;
+        }
     }
 
     public void rotateWristUp(){
-        wristServo.setPosition(0.31);
-        // tuned to be pretty close to 90 deg
+        wristServo.setPosition(0);
+        currentPos = wristPos.UP;
+        // 0 has been mechanically-aligned to be facing mostly forward on the bot (thx philip)
     }
 
     public void openClawMachine(){
@@ -171,6 +179,20 @@ public class SeasonalRobot extends BaseRobot {
         rightVerticalArmMotor.setMode(before);
     }
 
+    public void setVerticalArmPower(float speed){
+        float limitedSpeed = Math.min(Math.max(speed, -0.15f), 0.15f); // primary motors
+        leftVerticalArmMotor.setPower(limitedSpeed);
+        rightVerticalArmMotor.setPower(limitedSpeed);
+        //float b = Math.min(Math.max(speed, -0.01f), 0.01f); // secondary motors TODO
+        //leftUpperAscentMotor.setPower(b);
+        // rightUpperAscentMotor.setPower(b);
+
+        // these values are to be determined experimentally, then scaled against the main speed
+        leftAscentServo.setPower(0.9 * limitedSpeed);
+        rightAscentServo.setPower(0.9 * limitedSpeed);
+        setPanicServoPower(speed); // torque servos have ~double RPM of shark-3s
+    }
+
     /**
      * Changes the speed of the horizontal arm servo. Bear in mind the maximum extension distance before damage.
      */
@@ -236,8 +258,7 @@ public class SeasonalRobot extends BaseRobot {
         return limelight.getLatestResult().getBotpose_MT2().getPosition();
     }
 
-    public void setVerticalArmPower(float speed){
-        leftVerticalArmMotor.setPower(speed);
-        rightVerticalArmMotor.setPower(speed);
+    public void setPanicServoPower(float speed){
+        panicServo.setPower(speed);
     }
 }

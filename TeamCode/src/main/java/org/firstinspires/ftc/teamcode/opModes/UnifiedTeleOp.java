@@ -107,6 +107,9 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             robot.writeToTelemetry("Vertical Arm Power", currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
             typedRobot.setVerticalArmPower(currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
 
+            //typedRobot.setPanicServoPower(currentGamepadTwo.ps ? 1 : 0);
+            //ypedRobot.setPanicServoPower(currentGamepadTwo.square ? -1 : 0);
+
             // update limelight imu data
             typedRobot.updateLimelightIMUData();
             Position a = typedRobot.getLimelightPositionalData();
