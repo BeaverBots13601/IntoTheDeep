@@ -124,16 +124,16 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         // put button actions here in this format
 
         // speed ctrls (gp 1)
-        if (currentGamepadOne.dpad_up && !previousGamepadOne.dpad_up) {
+        if (currentGamepadOne.dpad_right && !previousGamepadOne.dpad_right) {
             constants.currentSpeedMode = constants.SPEEDS.FAST;
         }
-        if (currentGamepadOne.dpad_right && !previousGamepadOne.dpad_right) {
+        if (currentGamepadOne.dpad_up && !previousGamepadOne.dpad_up) {
             constants.currentSpeedMode = constants.SPEEDS.NORMAL;
         }
-        if (currentGamepadOne.dpad_down && !previousGamepadOne.dpad_down) {
+        if (currentGamepadOne.dpad_left && !previousGamepadOne.dpad_left) {
             constants.currentSpeedMode = constants.SPEEDS.SLOW;
         }
-        if (currentGamepadOne.dpad_left && !previousGamepadOne.dpad_left && robot.isDashboardEnabled()) {
+        if (currentGamepadOne.dpad_down && !previousGamepadOne.dpad_down && robot.isDashboardEnabled()) {
             constants.currentSpeedMode = constants.SPEEDS.CUSTOM_FTC_DASHBOARD;
         }
 
@@ -141,10 +141,10 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         if (typedRobot == null) return;
 
         // submersible grabber ctrls (gp 1)
-        if (currentGamepadOne.options && !previousGamepadOne.options) {
+        if (currentGamepadOne.right_bumper && !previousGamepadOne.right_bumper) {
             typedRobot.rotateWristDown();
         }
-        if (currentGamepadOne.share && !previousGamepadOne.share) {
+        if (currentGamepadOne.left_bumper && !previousGamepadOne.left_bumper) {
             typedRobot.rotateWristUp();
         }
         if (currentGamepadOne.triangle && !previousGamepadOne.triangle) {
