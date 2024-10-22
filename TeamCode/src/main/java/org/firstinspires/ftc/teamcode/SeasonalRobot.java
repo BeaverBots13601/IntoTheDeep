@@ -190,7 +190,7 @@ public class SeasonalRobot extends BaseRobot {
         // these values are to be determined experimentally, then scaled against the main speed
         leftAscentServo.setPower(0.9 * limitedSpeed);
         rightAscentServo.setPower(0.9 * limitedSpeed);
-        setPanicServoPower(speed); // torque servos have ~double RPM of shark-3s
+        // panic servo handled within main teleop
     }
 
     /**

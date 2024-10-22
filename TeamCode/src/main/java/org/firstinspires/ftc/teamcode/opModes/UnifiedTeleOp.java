@@ -104,22 +104,26 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
 
             // vertical arm (gp 1)
-            robot.writeToTelemetry("Vertical Arm Power", currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
-            typedRobot.setVerticalArmPower(currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger);
+            float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
+            robot.writeToTelemetry("Vertical Arm Power", a);
+            typedRobot.setVerticalArmPower(a);
+            typedRobot.setPanicServoPower(a == 0 ? (currentGamepadTwo.ps ? -1 : 0) : a);
+
 
             //typedRobot.setPanicServoPower(currentGamepadTwo.ps ? 1 : 0);
             //ypedRobot.setPanicServoPower(currentGamepadTwo.square ? -1 : 0);
 
             // update limelight imu data
             typedRobot.updateLimelightIMUData();
-            Position a = typedRobot.getLimelightPositionalData();
-            robot.writeRobotPositionToTelemetry(a.x, a.z);
+            Position robotPos = typedRobot.getLimelightPositionalData();
+            robot.writeRobotPositionToTelemetry(robotPos.x, robotPos.z);
 
             robot.updateTelemetry();
         }
     }
 
     private boolean clawMachineOpen = true;
+    private boolean specimenClawOpen = true;
     private void updateButtons() {
         // put button actions here in this format
 
@@ -171,11 +175,14 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
 
         // wall specimen grabber ctrl (gp 2)
-        if (currentGamepadTwo.options && !previousGamepadTwo.options){
-            typedRobot.openSpecimenClaw();
-        }
-        if (currentGamepadTwo.share && !previousGamepadTwo.share){
-            typedRobot.closeSpecimenClaw();
+        if (currentGamepadTwo.square && !previousGamepadTwo.square) {
+            if (specimenClawOpen){
+                typedRobot.closeSpecimenClaw();
+                specimenClawOpen = false;
+            } else {
+                typedRobot.openSpecimenClaw();
+                specimenClawOpen = true;
+            }
         }
     }
 

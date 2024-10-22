@@ -226,6 +226,8 @@ public class BaseRobot {
 
     public void writeRobotPositionToTelemetry(double x, double y){
         packet.field().fillRect(x, y, 10, 10);
+        writeToTelemetry("Robot Pos X", x);
+        writeToTelemetry("Robot Pos Z", y);
     }
 
     protected OpenCvCamera setUpCamera(String cameraName, int cameraWidth, int cameraHeight, OpenCvCameraRotation orientation) {
