@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.teamcode.SeasonalRobot;
+
 import java.util.ArrayList;
 
 @Autonomous
@@ -13,20 +15,20 @@ public class CalibrationOpmode extends LinearOpMode {
     DcMotorEx rightVerticalArmMotor;
     @Override
     public void runOpMode() {
+        SeasonalRobot robot = new SeasonalRobot(this);
+        robot.raiseVerticalArm();
         waitForStart();
         leftVerticalArmMotor = hardwareMap.get(DcMotorEx.class, "leftVerticalArmMotor");
         rightVerticalArmMotor = hardwareMap.get(DcMotorEx.class, "rightVerticalArmMotor");
-        leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        lowerVerticalArm();
+        robot.lowerVerticalArm();
 
         leftVerticalArmMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightVerticalArmMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        raiseVerticalArm();
+        robot.raiseVerticalArm();
 
         telemetry.addData("Left Arm Ticks: ", leftVerticalArmMotor.getCurrentPosition());
         telemetry.addData("Right Arm Ticks: ", rightVerticalArmMotor.getCurrentPosition());

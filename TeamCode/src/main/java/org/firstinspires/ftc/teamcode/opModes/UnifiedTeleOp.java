@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.misc.Pose;
@@ -96,8 +99,14 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             previousGamepadOne.copy(currentGamepadOne);
             previousGamepadTwo.copy(currentGamepadTwo);
 
+            // update limelight imu data
+            robot.updateLimelightIMUData();
+            Pose3D robotPos = robot.getLimelightPositionalData();
+            robot.writeRobotPositionToTelemetry(robotPos.getPosition().toUnit(DistanceUnit.INCH).x, robotPos.getPosition().toUnit(DistanceUnit.INCH).y);
+            robot.writeToTelemetry("Limelight Reported Alpha", robotPos.getOrientation().getYaw(AngleUnit.RADIANS));
+
             // After this, can use SeasonalRobot
-            if(typedRobot == null) continue;
+            if(typedRobot == null) { robot.updateTelemetry(); continue; }
 
             // horizontal arm (gp 2)
             robot.writeToTelemetry("Horizontal Arm Power", currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
@@ -106,17 +115,8 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             // vertical arm (gp 1)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
             robot.writeToTelemetry("Vertical Arm Power", a);
-            typedRobot.setVerticalArmPower(a);
-            typedRobot.setPanicServoPower(a == 0 ? (currentGamepadTwo.ps ? -1 : 0) : a);
-
-
-            //typedRobot.setPanicServoPower(currentGamepadTwo.ps ? 1 : 0);
-            //ypedRobot.setPanicServoPower(currentGamepadTwo.square ? -1 : 0);
-
-            // update limelight imu data
-            typedRobot.updateLimelightIMUData();
-            Position robotPos = typedRobot.getLimelightPositionalData();
-            robot.writeRobotPositionToTelemetry(robotPos.x, robotPos.z);
+            //typedRobot.setVerticalArmPower(a);
+            typedRobot.setPanicServoPower(a == 0 ? (currentGamepadTwo.ps ? -1 : 0) : a); // reels in when pressed, otherwise tracks arms
 
             robot.updateTelemetry();
         }

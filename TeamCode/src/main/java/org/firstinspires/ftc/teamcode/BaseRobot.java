@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMUNew;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -20,6 +21,9 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 import org.firstinspires.ftc.teamcode.vision.AprilTagModule;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -27,6 +31,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,6 +65,28 @@ public class BaseRobot {
     @Nullable
     private DigitalChannel switch_ = null;
 
+    private final Limelight3A limelight;
+
+    public ArrayList<AprilTagData> getLastLimelightAprilTags(){
+        ArrayList<AprilTagData> out = new ArrayList<>();
+
+        limelight.getLatestResult().getFiducialResults().forEach((LLResultTypes.FiducialResult a) -> out.add(new AprilTagData(a.getFiducialId(), a.getTargetPoseRobotSpace().getPosition().z, 0)));
+
+        return out;
+    }
+
+    public List<LLResultTypes.FiducialResult> getLastLimelightAprilTagsRaw(){
+        return limelight.getLatestResult().getFiducialResults();
+    }
+
+    public void updateLimelightIMUData(){
+        limelight.updateRobotOrientation(getImuAngle());
+    }
+
+    public Pose3D getLimelightPositionalData() {
+        return limelight.getLatestResult().getBotpose_MT2();
+    }
+
     public BaseRobot(LinearOpMode opmode, double wheelDiameter, double robotDiameter) {
         this.opMode = opmode;
         this.driveMotors = new DcMotorEx[constants.driveMotorName.values().length];
@@ -78,6 +105,11 @@ public class BaseRobot {
         try {
             switch_ = opmode.hardwareMap.get(DigitalChannel.class, "switch");
         } catch (Exception ignored){}
+
+
+        limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(0);
+        limelight.start();
     }
 
     /**
@@ -189,6 +221,7 @@ public class BaseRobot {
 
         IMU imu = opMode.hardwareMap.get(IMU.class, "imu");
         boolean worked = imu.initialize(imuParameters);
+        imu.resetYaw();
         writeToTelemetry("IMU Initialized Goodly?", worked);
 
         return imu;
@@ -210,7 +243,7 @@ public class BaseRobot {
      * @return double imu angle around the vertical axis (rotation).
      */
     public double getImuAngle() {
-        return this.imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle;
+        return this.imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
     }
 
     public void writeToTelemetry(String caption, Object value) {

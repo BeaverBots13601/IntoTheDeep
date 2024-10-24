@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
+import androidx.annotation.Nullable;
+
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -75,14 +79,28 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         if(currentLocation == Locations.Unknown) {
             // limelight apriltag
-            List<AprilTagData> tags = robot.getLastLimelightAprilTags();
+            List<LLResultTypes.FiducialResult> tags = robot.getLastLimelightAprilTagsRaw();
             int iterations2 = 0;
             while (tags.size() == 0 && iterations2 < 500) {
                 sleep(10);
                 iterations2++;
-                tags = robot.getLastLimelightAprilTags();
+                tags = robot.getLastLimelightAprilTagsRaw();
             }
-            AprilTagData max = new AprilTagData(); // default
+
+            @Nullable
+            FiducialResult importantTag = null;
+            for (LLResultTypes.FiducialResult tag : tags){
+                if(tag.getFiducialId() == 12 || tag.getFiducialId() == 15) importantTag = tag; break;
+            }
+
+            if (importantTag == null) {
+                // todo panic case
+            } else if(importantTag.getFiducialId() == 12) {
+                //importantTag.
+            } else if (importantTag.getFiducialId() == 15){
+
+            }
+            /*AprilTagData max = new AprilTagData(); // default
             for (AprilTagData tag : tags) {
                 if (tag.getDist() > max.getDist()) max = tag;
             }
@@ -102,7 +120,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 }
             } else {
                 // uh oh todo make this case
-            }
+            }*/
         }
 
         waitForStart(); // setup done actually do things
@@ -200,21 +218,24 @@ public class UnifiedAutonomous extends LinearOpMode {
             }
             case RedClose:
             case BlueClose: {
-                //far from basket
-                robot.turnDegrees(-45, .5);
-                robot.driveInches(50, 1);
-                robot.turnDegrees(45, .5);
-                robot.raiseVerticalArm();
-                robot.driveInches(6, 1);
-                robot.raiseVerticalArmsToHeight(0.5); // todo adjust me also calibrate arms
+                //far from basket, seam just beyond human player
+                robot.driveInches(-4, .5);
+                robot.turnDegrees(-40, .5);
+                robot.driveInches(-38, 0.6);
+                robot.turnDegrees(40, .5);
+                robot.raiseVerticalArmsToHeight(0.20);
+                robot.driveInches(-6, 0.2);
+                robot.raiseVerticalArmsToHeight(0.15); // todo adjust me also calibrate arms
                 robot.openSpecimenClaw();
-                robot.driveInches(-18, 1);
-                robot.turnDegrees(90, .5);
-                robot.driveInches(38,1);
+                robot.driveInches(18, 0.6);
                 robot.turnDegrees(-90, .5);
+                robot.driveInches(38,0.6);
+                robot.turnDegrees(-90, .5);
+                robot.driveInches(9, 0.6);
+                // extend some amnt
                 robot.closeClawMachine();
                 robot.turnDegrees(180,.5);
-                robot.driveInches(40,1);
+                robot.driveInches(-40,0.6);
                 robot.openClawMachine();
                 break;
 
