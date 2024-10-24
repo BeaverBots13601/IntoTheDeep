@@ -1,15 +1,12 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
@@ -116,7 +113,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
             robot.writeToTelemetry("Vertical Arm Power", a);
             //typedRobot.setVerticalArmPower(a);
-            typedRobot.setPanicServoPower(a == 0 ? (currentGamepadTwo.ps ? -1 : 0) : a); // reels in when pressed, otherwise tracks arms
 
             robot.updateTelemetry();
         }
@@ -161,19 +157,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             }
         }
 
-        // ascent ctrls (gp 1)
-        if (currentGamepadOne.square && !previousGamepadOne.square){ // l1 ascent
-            typedRobot.latchLowerAscentHooks();
-            typedRobot.reelLowerAscentHooks();
-        }
-        if (currentGamepadOne.circle && !previousGamepadOne.circle){ // l2 ascent
-            typedRobot.upperAscentMotorsToLatched();
-            typedRobot.setVerticalArmPower(-0.75f);
-            typedRobot.pullUpperAscentMotors();
-            sleep(2500);
-            typedRobot.setVerticalArmPower(0);
-        }
-
         // wall specimen grabber ctrl (gp 2)
         if (currentGamepadTwo.square && !previousGamepadTwo.square) {
             if (specimenClawOpen){
@@ -183,6 +166,10 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 typedRobot.openSpecimenClaw();
                 specimenClawOpen = true;
             }
+        }
+
+        if (currentGamepadOne.ps && !previousGamepadOne.ps){
+            typedRobot.driveAscentToCompletion();
         }
     }
 

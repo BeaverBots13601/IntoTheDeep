@@ -1,19 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.teamcode.vision.AprilTagData;
-
 import java.util.ArrayList;
-import java.util.List;
 
 /*
     - All motors have std ratio
@@ -27,11 +20,8 @@ public class SeasonalRobot extends BaseRobot {
     private final Servo wristServo;
     private final Servo clawMachineServo;
     private final Servo specimenClawServo;
-    private final CRServo leftAscentServo;
-    private final CRServo rightAscentServo;
-    private final DcMotorEx leftUpperAscentMotor;
-    private final DcMotorEx rightUpperAscentMotor;
-    private final CRServo panicServo;
+    private final DcMotorEx leftAscentMotor;
+    private final DcMotorEx rightAscentMotor;
 
     // candidate to be moved to base robot
 
@@ -44,12 +34,9 @@ public class SeasonalRobot extends BaseRobot {
         wristServo = setUpServo("wristServo");
         clawMachineServo = setUpServo("clawMachineServo");
         specimenClawServo = setUpServo("specimenClawServo");
-        leftAscentServo = opmode.hardwareMap.get(CRServo.class, "leftAscentServo");
-        leftAscentServo.setDirection(DcMotorSimple.Direction.REVERSE); // ?
-        rightAscentServo = opmode.hardwareMap.get(CRServo.class, "rightAscentServo");
-        leftUpperAscentMotor = createDefaultMotor("leftUpperAscentMotor");
-        rightUpperAscentMotor = createDefaultMotor("rightUpperAscentMotor");
-        panicServo = opmode.hardwareMap.get(CRServo.class, "panicServo");
+        leftAscentMotor = createDefaultMotor("leftUpperAscentMotor");
+        rightAscentMotor = createDefaultMotor("rightUpperAscentMotor");
+
 
         //wristServo.setPosition(0.31); // angles down. NOTE this breaks the Shark-2 horizontal servo
         // for some ungodly reason. It just makes it spin constantly. Not anyones fault (except ftc maybe)
@@ -102,9 +89,6 @@ public class SeasonalRobot extends BaseRobot {
 
         leftVerticalArmMotor.setPower(0.15);
         rightVerticalArmMotor.setPower(0.15);
-        leftAscentServo.setPower(0.15);
-        rightAscentServo.setPower(0.15);
-        panicServo.setPower(1);
 
         // run motor as long as not stopped
         while(avgChange >= 5){
@@ -126,9 +110,6 @@ public class SeasonalRobot extends BaseRobot {
 
         leftVerticalArmMotor.setPower(0);
         rightVerticalArmMotor.setPower(0);
-        leftAscentServo.setPower(0);
-        rightAscentServo.setPower(0);
-        panicServo.setPower(0);
     }
 
     /**
@@ -177,36 +158,22 @@ public class SeasonalRobot extends BaseRobot {
         leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        leftAscentServo.setPower(0.10);
-        rightAscentServo.setPower(0.10);
         leftVerticalArmMotor.setPower(0.10);
         rightVerticalArmMotor.setPower(0.10);
-        panicServo.setPower(1);
 
         while (rightVerticalArmMotor.isBusy() && opMode.opModeIsActive());
 
-        leftAscentServo.setPower(0);
-        rightAscentServo.setPower(0);
         leftVerticalArmMotor.setPower(0);
         rightVerticalArmMotor.setPower(0);
-        panicServo.setPower(0);
 
         leftVerticalArmMotor.setMode(before);
         rightVerticalArmMotor.setMode(before);
     }
 
     public void setVerticalArmPower(float speed){
-        float limitedSpeed = Math.min(Math.max(speed, -0.15f), 0.15f); // primary motors
+        float limitedSpeed = Math.min(Math.max(speed, -0.40f), 0.40f); // primary motors
         leftVerticalArmMotor.setPower(limitedSpeed);
         rightVerticalArmMotor.setPower(limitedSpeed);
-        //float b = Math.min(Math.max(speed, -0.01f), 0.01f); // secondary motors TODO
-        //leftUpperAscentMotor.setPower(b);
-        // rightUpperAscentMotor.setPower(b);
-
-        // these values are to be determined experimentally, then scaled against the main speed
-        leftAscentServo.setPower(limitedSpeed);
-        rightAscentServo.setPower(limitedSpeed);
-        // panic servo handled within main teleop
     }
 
     /**
@@ -219,46 +186,15 @@ public class SeasonalRobot extends BaseRobot {
 
     public void closeSpecimenClaw(){
         // todo these numbers need tweaking (talk to philip)
-        specimenClawServo.setPosition(.23);
+        specimenClawServo.setPosition(.5);
     }
 
     public void openSpecimenClaw(){
-        specimenClawServo.setPosition(0);
+        specimenClawServo.setPosition(.2);
     }
 
-    /**
-     * Once positioned, latches the hooks onto L3 the bar. Takes 2.5s.
-     */
-    public void latchLowerAscentHooks(){
-        leftAscentServo.setPower(0.75);
-        rightAscentServo.setPower(0.75);
-        opMode.sleep(2500);
-        leftAscentServo.setPower(0);
-        rightAscentServo.setPower(0);
-    }
-
-    public void reelLowerAscentHooks(){
-        leftAscentServo.setPower(-0.75);
-        rightAscentServo.setPower(-0.75);
-        opMode.sleep(3000);
-        leftAscentServo.setPower(0);
-        rightAscentServo.setPower(0);
-    }
-
-    public void upperAscentMotorsToLatched(){
-        leftUpperAscentMotor.setTargetPosition(-285);
-        rightUpperAscentMotor.setTargetPosition(285);
-        while (leftUpperAscentMotor.isBusy()){
-            opMode.sleep(5);
-        }
-    }
-
-    public void pullUpperAscentMotors(){
-        leftUpperAscentMotor.setTargetPosition(0);
-        rightUpperAscentMotor.setTargetPosition(0);
-    }
-
-    public void setPanicServoPower(float speed){
-        panicServo.setPower(speed);
+    public void driveAscentToCompletion(){
+        leftAscentMotor.setPower(1);
+        rightAscentMotor.setPower(1);
     }
 }

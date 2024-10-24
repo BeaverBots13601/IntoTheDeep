@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
+import com.qualcomm.robotcore.hardware.ServoController;
+
+import org.firstinspires.ftc.ftccommon.external.OnCreate;
 
 import java.util.SortedSet;
 
@@ -13,18 +16,19 @@ import java.util.SortedSet;
 public class Minimum extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        hardwareMap.get(CRServo.class, "servo").setPower(0);
+        //ServoController ctrl = hardwareMap.getAll(ServoController.class).get(0);//goBildaServo.getController();
 
-        CRServo goBildaServo = hardwareMap.get(CRServo.class, "servo");
-
-        SortedSet<String> names = hardwareMap.getAllNames(CRServo.class);
-        for(String name : names) {
-            Log.i("TEAMCODE", name);
+        for (ServoController ctrl : hardwareMap.getAll(ServoController.class)) {
+            ctrl.pwmDisable();
         }
+        for (CRServo a : hardwareMap.crservo){
+            a.setPower(0);
+        }
+        //ctrl.pwmEnable();
 
-        sleep(20 * 1000);
-        //CRServo sharkServo = hardwareMap.get(CRServo.class, "shark");
+        CRServo goBildaServo = hardwareMap.get(CRServo.class, "shark");
 
+        goBildaServo.setPower(0.5);
 
         waitForStart();
         //goBildaServo.setPower(0);
