@@ -243,7 +243,7 @@ public class BaseRobot {
      * @return double imu angle around the vertical axis (rotation).
      */
     public double getImuAngle() {
-        return this.imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+        return this.imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).thirdAngle;
     }
 
     public void writeToTelemetry(String caption, Object value) {

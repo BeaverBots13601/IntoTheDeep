@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
-import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
@@ -24,8 +23,13 @@ public class UnifiedAutonomous extends LinearOpMode {
         RedFar,
         Unknown
     }
+    protected enum Path {
+        STANDARD,
+        ALTERNATE
+    }
     private PropLocation propLocation;
     protected Locations currentLocation;
+    protected Path pathToFollow = Path.STANDARD;
     private PropIdentificationVisualPipeline line;
     public void runOpMode(){
         constants.ROBOT_HEADING = 0;
@@ -176,45 +180,42 @@ public class UnifiedAutonomous extends LinearOpMode {
             case RedFar:
             case BlueFar: {
                 //under basket
-                robot.turnDegrees(-90, .5);
-                robot.driveInches(24, 1);
-                robot.raiseVerticalArm();
-                robot.openSpecimenClaw();
-                robot.lowerVerticalArm();
-                robot.turnDegrees(90,.5);
-                /*for(int i = 0; i < 3; i++) { // samples - can't do this because of revised design
-                    robot.driveInches(24, 1);
-                    //close_hand
-                    robot.turnDegrees(180, .5);
-                    robot.driveInches(24, 1);
-                    //open_hand
-                    robot.turnDegrees(180, .5);
-                }*/
-                robot.turnDegrees(45,.5);
-                robot.driveInches(48,1);
-                robot.turnDegrees(45,.5);
-                robot.raiseVerticalArm();
-                robot.driveInches(6, .5);
-                break;
-
-                /*// alternate
-                robot.turnDegrees(45,.5);
-                robot.driveInches(24,1);
-                robot.turnDegrees(45,.5);
-                robot.driveInches(8,1);
-                robot.turnDegrees(-45,.5);
-                //attach_specimen
-                robot.turnDegrees(90,.5);
-                robot.driveInches(48,1);
-                robot.turnDegrees(90,.5);
-                robot.driveInches(12,1);
-                robot.turnDegrees(-90,.5);
-                //close_hand
-                robot.turnDegrees(135,.5);
-                robot.driveInches(20,1);
-                robot.turnDegrees(135,.5);
-                //close_hand*/
-
+                if(pathToFollow == Path.STANDARD){
+                    // low basket & l1 ascent
+                    // facing RIGHT
+                    robot.driveInches(-18, .6);
+                    robot.turnDegrees(-10, .5);
+                    robot.openSpecimenClaw();
+                    robot.turnDegrees(-35, .5);
+                    robot.driveInches(17, .6);
+                    robot.turnDegrees(-45, .5);
+                    robot.driveInches(18, .6);
+                    robot.turnDegrees(90, .5);
+                    robot.raiseVerticalArmsToHeight(0.3);
+                    robot.turnDegrees(-8, 0.6);
+                    robot.raiseVerticalArmsToHeight(0.1);
+                    break;
+                } else if (pathToFollow == Path.ALTERNATE){
+                    // specimen and l1 ascent
+                    robot.driveInches(-4, .5);
+                    robot.turnDegrees(40, .5);
+                    robot.driveInches(-38, 0.6);
+                    robot.turnDegrees(40, .5);
+                    robot.raiseVerticalArmsToHeight(0.20);
+                    robot.driveInches(-6, 0.2);
+                    robot.raiseVerticalArmsToHeight(0.15);
+                    robot.openSpecimenClaw();
+                    robot.driveInches(6, 0.6);
+                    robot.turnDegrees(-90,.5);
+                    robot.driveInches(-48,0.6);
+                    robot.turnDegrees(90,.5);
+                    robot.driveInches(18, .6);
+                    robot.turnDegrees(90, .5);
+                    robot.raiseVerticalArmsToHeight(0.15);
+                    robot.turnDegrees(-8, 0.6);
+                    robot.raiseVerticalArmsToHeight(0.1);
+                    break;
+                }
             }
             case RedClose:
             case BlueClose: {
@@ -232,8 +233,15 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.driveInches(38,0.6);
                 robot.turnDegrees(-90, .5);
                 robot.driveInches(9, 0.6);
-                // extend some amnt
+                robot.setHorizontalArmPower(0.5);
+                sleep(1250); // moving from starting pos
+                robot.setHorizontalArmPower(0);
                 robot.closeClawMachine();
+                robot.setHorizontalArmPower(-0.5);
+                sleep(900); // pulling back but not completely.
+                // NOTE: Definition of parking is having the 'robot' be 'partially' in human player zone.
+                // Can we just extend the horizontal arm and stay out?
+                robot.setHorizontalArmPower(0);
                 robot.turnDegrees(180,.5);
                 robot.driveInches(-40,0.6);
                 robot.openClawMachine();

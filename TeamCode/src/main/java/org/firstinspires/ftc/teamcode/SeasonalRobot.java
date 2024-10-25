@@ -4,15 +4,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.ArrayList;
 
-/*
-    - All motors have std ratio
-    - Bottom servos have 24 RPM
-    - Panic servo, Power servos, and upper ascent motors
-*/
 public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx leftVerticalArmMotor;
     private final DcMotorEx rightVerticalArmMotor;
@@ -30,12 +26,15 @@ public class SeasonalRobot extends BaseRobot {
         // setup specialized stuff
         leftVerticalArmMotor = createDefaultMotor("leftVerticalArmMotor");
         rightVerticalArmMotor = createDefaultMotor("rightVerticalArmMotor");
+        rightVerticalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        opmode.hardwareMap.get(CRServo.class, "horizontalArmServo").setPower(0); // terrible work around. causes twitch. todo investigate
         horizontalArmServo = opmode.hardwareMap.get(CRServo.class, "horizontalArmServo");
         wristServo = setUpServo("wristServo");
+        wristServo.setPosition(0.31 / 2); // todo okay?
         clawMachineServo = setUpServo("clawMachineServo");
         specimenClawServo = setUpServo("specimenClawServo");
-        leftAscentMotor = createDefaultMotor("leftUpperAscentMotor");
-        rightAscentMotor = createDefaultMotor("rightUpperAscentMotor");
+        leftAscentMotor = createDefaultMotor("leftAscentMotor");
+        rightAscentMotor = createDefaultMotor("rightAscentMotor");
 
 
         //wristServo.setPosition(0.31); // angles down. NOTE this breaks the Shark-2 horizontal servo
@@ -53,7 +52,7 @@ public class SeasonalRobot extends BaseRobot {
         MID,
         DOWN
     }
-    private wristPos currentPos = wristPos.DOWN;
+    private wristPos currentPos = wristPos.MID;
 
     public void rotateWristDown(){
         if(currentPos == wristPos.UP){
@@ -77,72 +76,6 @@ public class SeasonalRobot extends BaseRobot {
 
     public void closeClawMachine(){
         clawMachineServo.setPosition(0.5);
-    }
-
-    /**
-     * Raise the Vertical Arm to its maximum height. Takes at least 550ms to end.
-     */
-    public void raiseVerticalArm(){
-        ArrayList<Integer> lastFiveChanges = new ArrayList<>(5);
-        float avgChange = 999;
-        int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-
-        leftVerticalArmMotor.setPower(0.15);
-        rightVerticalArmMotor.setPower(0.15);
-
-        // run motor as long as not stopped
-        while(avgChange >= 5){
-            avgChange = 0;
-            while(lastFiveChanges.size() < 5){
-                // get 5 starting values
-                lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-                lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-                opMode.sleep(100);
-            }
-            opMode.sleep(50);
-            // take out the oldest one & add in a new one
-            lastFiveChanges.remove(0);
-            lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-            lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-            for (int num : lastFiveChanges) { avgChange += num; }
-            avgChange /= lastFiveChanges.size();
-        }
-
-        leftVerticalArmMotor.setPower(0);
-        rightVerticalArmMotor.setPower(0);
-    }
-
-    /**
-     * Lower the Vertical Arm to its minimum height. Takes at least 550ms to end.
-     */
-    public void lowerVerticalArm(){
-        ArrayList<Integer> lastFiveChanges = new ArrayList<>(5);
-        float avgChange = 999;
-        int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-
-        leftVerticalArmMotor.setPower(-0.75);
-        rightVerticalArmMotor.setPower(-0.75);
-
-        // run motor as long as not stopped
-        while(avgChange >= 5){
-            avgChange = 0;
-            while(lastFiveChanges.size() < 5){
-                // get 5 starting values
-                lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-                lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-                opMode.sleep(100);
-            }
-            opMode.sleep(50);
-            // take out the oldest one & add in a new one
-            lastFiveChanges.remove(0);
-            lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-            lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-            for (int num : lastFiveChanges) { avgChange += num; }
-            avgChange /= lastFiveChanges.size();
-        }
-
-        leftVerticalArmMotor.setPower(0);
-        rightVerticalArmMotor.setPower(0);
     }
 
     /**
@@ -170,8 +103,8 @@ public class SeasonalRobot extends BaseRobot {
         rightVerticalArmMotor.setMode(before);
     }
 
-    public void setVerticalArmPower(float speed){
-        float limitedSpeed = Math.min(Math.max(speed, -0.40f), 0.40f); // primary motors
+    public void setVerticalArmPower(double speed){
+        double limitedSpeed = Math.min(Math.max(speed, -0.60), 0.60); // primary motors
         leftVerticalArmMotor.setPower(limitedSpeed);
         rightVerticalArmMotor.setPower(limitedSpeed);
     }
@@ -179,22 +112,22 @@ public class SeasonalRobot extends BaseRobot {
     /**
      * Changes the speed of the horizontal arm servo. Bear in mind the maximum extension distance before damage.
      */
-    public void setHorizontalArmPower(float speed){
+    public void setHorizontalArmPower(double speed){
         // todo needs some way to set/limit distance
         horizontalArmServo.setPower(speed);
     }
 
     public void closeSpecimenClaw(){
-        // todo these numbers need tweaking (talk to philip)
         specimenClawServo.setPosition(.5);
     }
 
     public void openSpecimenClaw(){
-        specimenClawServo.setPosition(.2);
+        // 1 is hardware aligned to be open
+        specimenClawServo.setPosition(1);
     }
 
-    public void driveAscentToCompletion(){
-        leftAscentMotor.setPower(1);
-        rightAscentMotor.setPower(1);
+    public void setAscentMotorSpeeds(double speed){
+        leftAscentMotor.setPower(speed);
+        rightAscentMotor.setPower(speed);
     }
 }

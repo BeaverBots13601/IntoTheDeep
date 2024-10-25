@@ -40,7 +40,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             typedRobot = (SeasonalRobot) robot;
         }
 
-        //updateSwitchState();
+        updateSwitchState(robot.getSwitchState());
         double referenceAngle;
         if(constants.ROBOT_HEADING != 0){
             referenceAngle = constants.ROBOT_HEADING;
@@ -57,6 +57,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             currentGamepadTwo.copy(gamepad2);
             updateButtons();
             updateSwitchState(robot.getSwitchState());
+            robot.writeToTelemetry("Current Orientation Mode", orientationMode);
 
             double speedNow = constants.currentSpeedMode.getNumericalSpeed();
 
@@ -89,7 +90,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             robot.writeToTelemetry("RightFrontPower", rightFrontPower);
             robot.writeToTelemetry("RightBackPower", rightBackPower);
             robot.writeToTelemetry("Current Speed Mode", constants.currentSpeedMode);
-            robot.writeToTelemetry("Current Orientation Mode", orientationMode);
 
             robot.setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -105,14 +105,18 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             // After this, can use SeasonalRobot
             if(typedRobot == null) { robot.updateTelemetry(); continue; }
 
-            // horizontal arm (gp 2)
+            // horizontal arm (gp 1)
             robot.writeToTelemetry("Horizontal Arm Power", currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
             typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
 
-            // vertical arm (gp 1)
+            // vertical arm (gp 2)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
             robot.writeToTelemetry("Vertical Arm Power", a);
-            //typedRobot.setVerticalArmPower(a);
+            typedRobot.setVerticalArmPower(a);
+
+            double ascentMotorPower = (currentGamepadTwo.right_bumper) ? 0.1 : ((currentGamepadTwo.left_bumper) ? -0.1 : 0);
+            typedRobot.setAscentMotorSpeeds(ascentMotorPower);
+            robot.writeToTelemetry("Ascent Motor Power", ascentMotorPower);
 
             robot.updateTelemetry();
         }
@@ -168,9 +172,14 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             }
         }
 
-        if (currentGamepadOne.ps && !previousGamepadOne.ps){
-            typedRobot.driveAscentToCompletion();
+        // ascent ctrls (gp2)
+        if (currentGamepadTwo.ps && !previousGamepadTwo.ps){
+            typedRobot.setAscentMotorSpeeds(1);
+            while (opModeIsActive() && !(currentGamepadTwo.ps && !previousGamepadTwo.ps)); // run until interrupt
+            typedRobot.setAscentMotorSpeeds(0); // this is an abort: during matches we should end by ending opmode
         }
+
+        // spool/unspool for verticals
     }
 
     private void updateSwitchState(boolean switchState) {

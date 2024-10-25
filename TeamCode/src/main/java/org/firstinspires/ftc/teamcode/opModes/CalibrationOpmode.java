@@ -15,24 +15,26 @@ public class CalibrationOpmode extends LinearOpMode {
     DcMotorEx rightVerticalArmMotor;
     @Override
     public void runOpMode() {
-        SeasonalRobot robot = new SeasonalRobot(this);
-        robot.raiseVerticalArm();
         waitForStart();
         leftVerticalArmMotor = hardwareMap.get(DcMotorEx.class, "leftVerticalArmMotor");
         rightVerticalArmMotor = hardwareMap.get(DcMotorEx.class, "rightVerticalArmMotor");
+        rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        robot.lowerVerticalArm();
+        //lowerVerticalArm();
 
         leftVerticalArmMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightVerticalArmMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        robot.raiseVerticalArm();
+        raiseVerticalArm();
 
         telemetry.addData("Left Arm Ticks: ", leftVerticalArmMotor.getCurrentPosition());
         telemetry.addData("Right Arm Ticks: ", rightVerticalArmMotor.getCurrentPosition());
         telemetry.addData("Average: ", (leftVerticalArmMotor.getCurrentPosition() + rightVerticalArmMotor.getCurrentPosition()) / 2);
+
+        telemetry.update();
 
         while (opModeIsActive());
     }
@@ -42,13 +44,13 @@ public class CalibrationOpmode extends LinearOpMode {
         float avgChange = 999;
         int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
 
-        leftVerticalArmMotor.setPower(-0.75);
-        rightVerticalArmMotor.setPower(-0.75);
+        leftVerticalArmMotor.setPower(-0.15);
+        rightVerticalArmMotor.setPower(-0.15);
 
         // run motor as long as not stopped
-        while(avgChange >= 5){
+        while(avgChange >= 5 && opModeIsActive()){
             avgChange = 0;
-            while(lastFiveChanges.size() < 5){
+            while(lastFiveChanges.size() < 5 && opModeIsActive()){
                 // get 5 starting values
                 lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
                 lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
@@ -72,13 +74,13 @@ public class CalibrationOpmode extends LinearOpMode {
         float avgChange = 999;
         int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
 
-        leftVerticalArmMotor.setPower(0.75);
-        rightVerticalArmMotor.setPower(0.75);
+        leftVerticalArmMotor.setPower(0.15);
+        rightVerticalArmMotor.setPower(0.15);
 
         // run motor as long as not stopped
-        while(avgChange >= 5){
+        while(avgChange >= 50 && opModeIsActive()){
             avgChange = 0;
-            while(lastFiveChanges.size() < 5){
+            while(lastFiveChanges.size() < 5 && opModeIsActive()){
                 // get 5 starting values
                 lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
                 lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
@@ -94,6 +96,6 @@ public class CalibrationOpmode extends LinearOpMode {
         }
 
         leftVerticalArmMotor.setPower(0);
+        rightVerticalArmMotor.setPower(0);
     }
-
 }
