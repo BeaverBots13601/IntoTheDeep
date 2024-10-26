@@ -36,11 +36,12 @@ public class UnifiedAutonomous extends LinearOpMode {
         if(currentLocation == null) currentLocation = Locations.Unknown;
         // Example autonomous code that can be used. Don't be afraid to expand or remodel it as needed
         SeasonalRobot robot = new SeasonalRobot(this);
-        sleep(1000);
+        robot.closeSpecimenClaw();
 
         /* !! This code uses AprilTags to determine where we are starting on the field.
         Note that code segments like these aren't always going to be useful; don't feel obligated to
         use them just because they exist.
+        sleep(1000);
 
         AprilTagModule tags = robot.getMod();
         int iterations2 = 0;
@@ -183,27 +184,32 @@ public class UnifiedAutonomous extends LinearOpMode {
                 if(pathToFollow == Path.STANDARD){
                     // low basket & l1 ascent
                     // facing RIGHT
-                    robot.driveInches(-18, .6);
-                    robot.turnDegrees(-10, .5);
+                    robot.driveInches(-20, .6);
+                    robot.raiseVerticalArmsToHeight(0.1);
+                    robot.driveInches(-12, .6);
+                    robot.setVerticalArmPower(0.1);
                     robot.openSpecimenClaw();
-                    robot.turnDegrees(-35, .5);
+                    sleep(1000);
+                    robot.setVerticalArmPower(0);
+                    robot.driveInches(8, .6);
+                    robot.turnDegrees(-45, .5);
                     robot.driveInches(17, .6);
                     robot.turnDegrees(-45, .5);
-                    robot.driveInches(18, .6);
+                    robot.driveInches(24, .6);
                     robot.turnDegrees(90, .5);
-                    robot.raiseVerticalArmsToHeight(0.3);
                     robot.turnDegrees(-8, 0.6);
-                    robot.raiseVerticalArmsToHeight(0.1);
+                    robot.raiseVerticalArmsToHeight(0.05);
                     break;
-                } else if (pathToFollow == Path.ALTERNATE){
+                } /*else if (pathToFollow == Path.ALTERNATE){
                     // specimen and l1 ascent
                     robot.driveInches(-4, .5);
                     robot.turnDegrees(40, .5);
                     robot.driveInches(-38, 0.6);
                     robot.turnDegrees(40, .5);
-                    robot.raiseVerticalArmsToHeight(0.20);
+                    sleep(1000);
+                    robot.raiseVerticalArmsToHeight(0.08);
                     robot.driveInches(-6, 0.2);
-                    robot.raiseVerticalArmsToHeight(0.15);
+                    robot.raiseVerticalArmsToHeight(0.06);
                     robot.openSpecimenClaw();
                     robot.driveInches(6, 0.6);
                     robot.turnDegrees(-90,.5);
@@ -211,29 +217,37 @@ public class UnifiedAutonomous extends LinearOpMode {
                     robot.turnDegrees(90,.5);
                     robot.driveInches(18, .6);
                     robot.turnDegrees(90, .5);
-                    robot.raiseVerticalArmsToHeight(0.15);
+                    robot.raiseVerticalArmsToHeight(0.08);
                     robot.turnDegrees(-8, 0.6);
-                    robot.raiseVerticalArmsToHeight(0.1);
+                    robot.raiseVerticalArmsToHeight(0.05);
                     break;
-                }
+                }*/
+                robot.driveInches(-48, .6);
+                robot.turnDegrees(90, .5);
+                robot.driveInches(-15, .6);
+                robot.raiseVerticalArmsToHeight(0.33);
+                robot.driveInches(-4, .6);
+                robot.raiseVerticalArmsToHeight(0.2);
+
             }
             case RedClose:
             case BlueClose: {
                 //far from basket, seam just beyond human player
                 robot.driveInches(-4, .5);
                 robot.turnDegrees(-40, .5);
-                robot.driveInches(-38, 0.6);
+                robot.driveInches(-28, 0.6);
                 robot.turnDegrees(40, .5);
-                robot.raiseVerticalArmsToHeight(0.20);
-                robot.driveInches(-6, 0.2);
-                robot.raiseVerticalArmsToHeight(0.15); // todo adjust me also calibrate arms
+                robot.raiseVerticalArmsToHeight(0.48);
+                robot.driveInches(-4, 0.2);
+                robot.raiseVerticalArmsToHeight(0.33);
                 robot.openSpecimenClaw();
+                sleep(500);
                 robot.driveInches(18, 0.6);
                 robot.turnDegrees(-90, .5);
-                robot.driveInches(38,0.6);
+                robot.driveInches(46,0.6);
                 robot.turnDegrees(-90, .5);
-                robot.driveInches(9, 0.6);
-                robot.setHorizontalArmPower(0.5);
+                robot.driveInches(-9, 0.6);
+                /*robot.setHorizontalArmPower(0.5);
                 sleep(1250); // moving from starting pos
                 robot.setHorizontalArmPower(0);
                 robot.closeClawMachine();
@@ -245,6 +259,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.turnDegrees(180,.5);
                 robot.driveInches(-40,0.6);
                 robot.openClawMachine();
+                 */
                 break;
 
                 /*//alternate

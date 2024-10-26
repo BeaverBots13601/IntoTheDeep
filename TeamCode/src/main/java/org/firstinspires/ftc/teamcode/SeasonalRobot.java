@@ -26,7 +26,6 @@ public class SeasonalRobot extends BaseRobot {
         // setup specialized stuff
         leftVerticalArmMotor = createDefaultMotor("leftVerticalArmMotor");
         rightVerticalArmMotor = createDefaultMotor("rightVerticalArmMotor");
-        rightVerticalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         opmode.hardwareMap.get(CRServo.class, "horizontalArmServo").setPower(0); // terrible work around. causes twitch. todo investigate
         horizontalArmServo = opmode.hardwareMap.get(CRServo.class, "horizontalArmServo");
         wristServo = setUpServo("wristServo");
@@ -91,8 +90,8 @@ public class SeasonalRobot extends BaseRobot {
         leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        leftVerticalArmMotor.setPower(0.10);
-        rightVerticalArmMotor.setPower(0.10);
+        leftVerticalArmMotor.setPower(0.20);
+        rightVerticalArmMotor.setPower(0.20);
 
         while (rightVerticalArmMotor.isBusy() && opMode.opModeIsActive());
 

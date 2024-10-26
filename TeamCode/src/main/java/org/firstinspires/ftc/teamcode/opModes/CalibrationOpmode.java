@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
 
@@ -17,6 +18,7 @@ public class CalibrationOpmode extends LinearOpMode {
     public void runOpMode() {
         waitForStart();
         leftVerticalArmMotor = hardwareMap.get(DcMotorEx.class, "leftVerticalArmMotor");
+        leftVerticalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightVerticalArmMotor = hardwareMap.get(DcMotorEx.class, "rightVerticalArmMotor");
         rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -78,7 +80,7 @@ public class CalibrationOpmode extends LinearOpMode {
         rightVerticalArmMotor.setPower(0.15);
 
         // run motor as long as not stopped
-        while(avgChange >= 50 && opModeIsActive()){
+        while(avgChange >= 3 && opModeIsActive()){
             avgChange = 0;
             while(lastFiveChanges.size() < 5 && opModeIsActive()){
                 // get 5 starting values
@@ -93,6 +95,10 @@ public class CalibrationOpmode extends LinearOpMode {
             lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
             for (int num : lastFiveChanges) { avgChange += num; }
             avgChange /= lastFiveChanges.size();
+            telemetry.addData("Left Arm Ticks: ", leftVerticalArmMotor.getCurrentPosition());
+            telemetry.addData("Right Arm Ticks: ", rightVerticalArmMotor.getCurrentPosition());
+            telemetry.addData("Average: ", (leftVerticalArmMotor.getCurrentPosition() + rightVerticalArmMotor.getCurrentPosition()) / 2);
+            telemetry.update();
         }
 
         leftVerticalArmMotor.setPower(0);
