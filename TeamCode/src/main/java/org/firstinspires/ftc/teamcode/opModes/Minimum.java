@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes.SubClasses;
+package org.firstinspires.ftc.teamcode.opModes;
 
 import android.util.Log;
 

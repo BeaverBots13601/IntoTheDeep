@@ -174,9 +174,11 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // ascent ctrls (gp2)
         if (currentGamepadTwo.ps && !previousGamepadTwo.ps){
-            typedRobot.setAscentMotorSpeeds(1);
+            //typedRobot.setAscentMotorSpeeds(1);
+            typedRobot.setVerticalArmPower(0.6);
             while (opModeIsActive() && !(currentGamepadTwo.ps && !previousGamepadTwo.ps)); // run until interrupt
-            typedRobot.setAscentMotorSpeeds(0); // this is an abort: during matches we should end by ending opmode
+            //typedRobot.setAscentMotorSpeeds(0); // this is an abort: during matches we should end by ending opmode
+            typedRobot.setVerticalArmPower(0);
         }
 
         // spool/unspool for verticals

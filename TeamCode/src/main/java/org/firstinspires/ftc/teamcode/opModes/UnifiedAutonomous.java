@@ -192,6 +192,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                     sleep(1000);
                     robot.setVerticalArmPower(0);
                     robot.driveInches(8, .6);
+                    robot.closeSpecimenClaw();
                     robot.turnDegrees(-45, .5);
                     robot.driveInches(17, .6);
                     robot.turnDegrees(-45, .5);
@@ -199,6 +200,10 @@ public class UnifiedAutonomous extends LinearOpMode {
                     robot.turnDegrees(90, .5);
                     robot.turnDegrees(-8, 0.6);
                     robot.raiseVerticalArmsToHeight(0.05);
+                    robot.setHorizontalArmPower(1);
+                    sleep(750);
+                    // put our current heading in constants for field teleopmodes to read later
+                    //constants.ROBOT_HEADING = robot.getImuAngle();
                     break;
                 } /*else if (pathToFollow == Path.ALTERNATE){
                     // specimen and l1 ascent
@@ -222,13 +227,18 @@ public class UnifiedAutonomous extends LinearOpMode {
                     robot.raiseVerticalArmsToHeight(0.05);
                     break;
                 }*/
-                robot.driveInches(-48, .6);
-                robot.turnDegrees(90, .5);
-                robot.driveInches(-15, .6);
-                robot.raiseVerticalArmsToHeight(0.33);
+                // just l1 ascent from basket
+                robot.driveInches(-45, .6);
+                robot.turnDegrees(83, .5);
+                robot.driveInches(-10, .6);
+                robot.raiseVerticalArmsToHeight(0.45);
                 robot.driveInches(-4, .6);
-                robot.raiseVerticalArmsToHeight(0.2);
-
+                robot.raiseVerticalArmsToHeight(0.4);
+                robot.setHorizontalArmPower(1);
+                sleep(750);
+                break;
+                // put our current heading in constants for field teleopmodes to read later
+                //constants.ROBOT_HEADING = robot.getImuAngle();
             }
             case RedClose:
             case BlueClose: {
@@ -247,6 +257,10 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.driveInches(46,0.6);
                 robot.turnDegrees(-90, .5);
                 robot.driveInches(-9, 0.6);
+                // put our current heading in constants for field teleopmodes to read later
+                constants.ROBOT_HEADING = robot.getImuAngle() + Math.PI; // add pi, reversed
+                robot.setHorizontalArmPower(1);
+                sleep(750);
                 /*robot.setHorizontalArmPower(0.5);
                 sleep(1250); // moving from starting pos
                 robot.setHorizontalArmPower(0);
@@ -282,8 +296,5 @@ public class UnifiedAutonomous extends LinearOpMode {
 
             }
         }
-
-        // put our current heading in constants for field teleopmodes to read later
-        constants.ROBOT_HEADING = robot.getImuAngle();
     }
 }

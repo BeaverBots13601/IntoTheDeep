@@ -122,7 +122,7 @@ public class SeasonalRobot extends BaseRobot {
 
     public void openSpecimenClaw(){
         // 1 is hardware aligned to be open
-        specimenClawServo.setPosition(1);
+        specimenClawServo.setPosition(.9);
     }
 
     public void setAscentMotorSpeeds(double speed){
