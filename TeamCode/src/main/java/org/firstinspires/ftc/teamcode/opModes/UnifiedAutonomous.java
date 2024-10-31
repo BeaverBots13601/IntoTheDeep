@@ -185,12 +185,12 @@ public class UnifiedAutonomous extends LinearOpMode {
                     // low basket & l1 ascent
                     // facing RIGHT
                     robot.driveInches(-20, .6);
-                    robot.raiseVerticalArmsToHeight(0.1);
+                    robot.raiseRearVerticalArmsToHeight(0.1);
                     robot.driveInches(-12, .6);
-                    robot.setVerticalArmPower(0.1);
+                    robot.setRearVerticalArmPower(0.1);
                     robot.openSpecimenClaw();
                     sleep(1000);
-                    robot.setVerticalArmPower(0);
+                    robot.setRearVerticalArmPower(0);
                     robot.driveInches(8, .6);
                     robot.closeSpecimenClaw();
                     robot.turnDegrees(-45, .5);
@@ -199,7 +199,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                     robot.driveInches(24, .6);
                     robot.turnDegrees(90, .5);
                     robot.turnDegrees(-8, 0.6);
-                    robot.raiseVerticalArmsToHeight(0.05);
+                    robot.raiseRearVerticalArmsToHeight(0.05);
                     robot.setHorizontalArmPower(1);
                     sleep(750);
                     // put our current heading in constants for field teleopmodes to read later
@@ -231,9 +231,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.driveInches(-45, .6);
                 robot.turnDegrees(83, .5);
                 robot.driveInches(-10, .6);
-                robot.raiseVerticalArmsToHeight(0.45);
+                robot.raiseRearVerticalArmsToHeight(0.45);
                 robot.driveInches(-4, .6);
-                robot.raiseVerticalArmsToHeight(0.4);
+                robot.raiseRearVerticalArmsToHeight(0.4);
                 robot.setHorizontalArmPower(1);
                 sleep(750);
                 break;
@@ -247,9 +247,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.turnDegrees(-40, .5);
                 robot.driveInches(-28, 0.6);
                 robot.turnDegrees(40, .5);
-                robot.raiseVerticalArmsToHeight(0.48);
+                robot.raiseRearVerticalArmsToHeight(0.48);
                 robot.driveInches(-4, 0.2);
-                robot.raiseVerticalArmsToHeight(0.33);
+                robot.raiseRearVerticalArmsToHeight(0.33);
                 robot.openSpecimenClaw();
                 sleep(500);
                 robot.driveInches(18, 0.6);

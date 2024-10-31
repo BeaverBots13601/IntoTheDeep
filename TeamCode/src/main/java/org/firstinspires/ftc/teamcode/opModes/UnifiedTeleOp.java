@@ -22,6 +22,8 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     private Gamepad previousGamepadOne = new Gamepad();
     private Gamepad currentGamepadTwo = new Gamepad();
     private Gamepad previousGamepadTwo = new Gamepad();
+    private boolean ascentMode = false;
+    private boolean manualVerticalMode = false;
 
     protected enum RobotConfiguration {
         RESTRICTED,
@@ -77,7 +79,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             robot.writeToTelemetry("IMU DATA (rads)", orientation);
             robot.writeToTelemetry("Reference Angle (rads)", constants.ROBOT_HEADING);
 
-
             double maxPower = Math.max(Math.abs(stickY) + Math.abs(stickX) + Math.abs(stickRotation), 1);
 
             double leftFrontPower = (rotatedStickY + rotatedStickX + stickRotation) / maxPower * speedNow;
@@ -112,17 +113,14 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             // vertical arm (gp 2)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
             robot.writeToTelemetry("Vertical Arm Power", a);
-            typedRobot.setVerticalArmPower(a);
 
-            double ascentMotorPower = (currentGamepadTwo.right_bumper) ? 0.1 : ((currentGamepadTwo.left_bumper) ? -0.1 : 0);
-            typedRobot.setAscentMotorSpeeds(ascentMotorPower);
-            robot.writeToTelemetry("Ascent Motor Power", ascentMotorPower);
+            if (manualVerticalMode && ascentMode) typedRobot.setRearVerticalArmPower(a);
+            if (manualVerticalMode && !ascentMode) // todo new vertical
 
             robot.updateTelemetry();
         }
     }
 
-    private boolean clawMachineOpen = true;
     private boolean specimenClawOpen = true;
     private void updateButtons() {
         // put button actions here in this format
@@ -151,14 +149,11 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         if (currentGamepadOne.left_bumper && !previousGamepadOne.left_bumper) {
             typedRobot.rotateWristUp();
         }
-        if (currentGamepadOne.triangle && !previousGamepadOne.triangle) {
-            if (clawMachineOpen){
-                typedRobot.closeClawMachine();
-                clawMachineOpen = false;
-            } else {
-                typedRobot.openClawMachine();
-                clawMachineOpen = true;
-            }
+        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
+            typedRobot.toggleIntake();
+        }
+        if (currentGamepadOne.circle && !previousGamepadOne.circle){
+            typedRobot.reverseIntakeDirection();
         }
 
         // wall specimen grabber ctrl (gp 2)
@@ -174,14 +169,22 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // ascent ctrls (gp2)
         if (currentGamepadTwo.ps && !previousGamepadTwo.ps){
-            //typedRobot.setAscentMotorSpeeds(1);
-            typedRobot.setVerticalArmPower(0.6);
-            while (opModeIsActive() && !(currentGamepadTwo.ps && !previousGamepadTwo.ps)); // run until interrupt
-            //typedRobot.setAscentMotorSpeeds(0); // this is an abort: during matches we should end by ending opmode
-            typedRobot.setVerticalArmPower(0);
+            if(ascentMode){
+                typedRobot.setRearVerticalArmPower(0.6); // climb
+                while (opModeIsActive()) { if (currentGamepadTwo.ps && !previousGamepadTwo.ps) break; } // run until abort
+                ascentMode = false;
+            } else {
+                // enter ascent mode: control change
+                ascentMode = true;
+                gamepad2.rumble(300);
+                if (!manualVerticalMode) typedRobot.raiseRearVerticalArmsToHeightAsync(0.5); // need to dial value
+            }
         }
 
-        // spool/unspool for verticals
+        // manual verticals (gp2)
+        if (currentGamepadTwo.dpad_right && !previousGamepadTwo.dpad_right){
+            manualVerticalMode = !manualVerticalMode;
+        }
     }
 
     private void updateSwitchState(boolean switchState) {

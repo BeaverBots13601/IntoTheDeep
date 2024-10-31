@@ -7,34 +7,27 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.util.ArrayList;
-
 public class SeasonalRobot extends BaseRobot {
-    private final DcMotorEx leftVerticalArmMotor;
-    private final DcMotorEx rightVerticalArmMotor;
-    private final CRServo horizontalArmServo;
+    private final DcMotorEx leftRearVerticalArmMotor;
+    private final DcMotorEx rightRearVerticalArmMotor;
+    private final DcMotorEx horizontalArmMotor;
     private final Servo wristServo;
-    private final Servo clawMachineServo;
     private final Servo specimenClawServo;
-    private final DcMotorEx leftAscentMotor;
-    private final DcMotorEx rightAscentMotor;
+    private final CRServo intakeServo;
 
     // candidate to be moved to base robot
 
     public SeasonalRobot(LinearOpMode opmode) {
         super(opmode, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
         // setup specialized stuff
-        leftVerticalArmMotor = createDefaultMotor("leftVerticalArmMotor");
-        rightVerticalArmMotor = createDefaultMotor("rightVerticalArmMotor");
-        opmode.hardwareMap.get(CRServo.class, "horizontalArmServo").setPower(0); // terrible work around. causes twitch. todo investigate
-        horizontalArmServo = opmode.hardwareMap.get(CRServo.class, "horizontalArmServo");
+        leftRearVerticalArmMotor = createDefaultMotor("leftRearVerticalArmMotor");
+        rightRearVerticalArmMotor = createDefaultMotor("rightRearVerticalArmMotor");
+        horizontalArmMotor = createDefaultMotor("horizontalArmMotor");
         wristServo = setUpServo("wristServo");
         wristServo.setPosition(0.31 / 2); // todo okay?
-        clawMachineServo = setUpServo("clawMachineServo");
         specimenClawServo = setUpServo("specimenClawServo");
-        leftAscentMotor = createDefaultMotor("leftAscentMotor");
-        rightAscentMotor = createDefaultMotor("rightAscentMotor");
-
+        intakeServo = opmode.hardwareMap.get(CRServo.class, "intakeServo");
+        intakeServo.setPower(0); // remove potential floating state
 
         //wristServo.setPosition(0.31); // angles down. NOTE this breaks the Shark-2 horizontal servo
         // for some ungodly reason. It just makes it spin constantly. Not anyones fault (except ftc maybe)
@@ -69,43 +62,78 @@ public class SeasonalRobot extends BaseRobot {
         // 0 has been mechanically-aligned to be facing mostly forward on the bot (thx philip)
     }
 
-    public void openClawMachine(){
-        clawMachineServo.setPosition(0);
+    public void toggleIntake(){
+        intakeServo.setPower(intakeServo.getPower() == 0 ? 1 : 0);
     }
 
-    public void closeClawMachine(){
-        clawMachineServo.setPosition(0.5);
+    public void reverseIntakeDirection(){
+        if (intakeServo.getDirection() == DcMotorSimple.Direction.FORWARD) {
+            intakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        } else {
+            intakeServo.setDirection(DcMotorSimple.Direction.FORWARD);
+        }
+
     }
 
     /**
      * Raises the arms to a specific height. Might not work the best?
      * @param height The height to raise it to, in a percentage. [0, 1]
      */
-    public void raiseVerticalArmsToHeight(double height){
-        DcMotor.RunMode before = leftVerticalArmMotor.getMode();
+    public void raiseRearVerticalArmsToHeight(double height){
+        DcMotor.RunMode before = leftRearVerticalArmMotor.getMode();
 
-        rightVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_VERTICALS_HEIGHT_TICKS * height));
-        leftVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_VERTICALS_HEIGHT_TICKS * height));
+        rightRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
+        leftRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
 
-        leftVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        leftVerticalArmMotor.setPower(0.20);
-        rightVerticalArmMotor.setPower(0.20);
+        leftRearVerticalArmMotor.setPower(0.20);
+        rightRearVerticalArmMotor.setPower(0.20);
 
-        while (rightVerticalArmMotor.isBusy() && opMode.opModeIsActive());
+        while (rightRearVerticalArmMotor.isBusy() && opMode.opModeIsActive());
 
-        leftVerticalArmMotor.setPower(0);
-        rightVerticalArmMotor.setPower(0);
+        leftRearVerticalArmMotor.setPower(0);
+        rightRearVerticalArmMotor.setPower(0);
 
-        leftVerticalArmMotor.setMode(before);
-        rightVerticalArmMotor.setMode(before);
+        leftRearVerticalArmMotor.setMode(before);
+        rightRearVerticalArmMotor.setMode(before);
     }
 
-    public void setVerticalArmPower(double speed){
+    private Thread currentAction = null;
+    public void raiseRearVerticalArmsToHeightAsync(double height){
+        if(currentAction != null && currentAction.isAlive()){
+            currentAction.interrupt(); // interrupt current movement if running
+        }
+
+        currentAction = new Thread(() -> {
+            DcMotor.RunMode before = leftRearVerticalArmMotor.getMode();
+
+            rightRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
+            leftRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
+
+            leftRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            leftRearVerticalArmMotor.setPower(0.20);
+            rightRearVerticalArmMotor.setPower(0.20);
+
+            while (rightRearVerticalArmMotor.isBusy() && opMode.opModeIsActive() && !Thread.currentThread().isInterrupted());
+
+            leftRearVerticalArmMotor.setPower(0);
+            rightRearVerticalArmMotor.setPower(0);
+
+            leftRearVerticalArmMotor.setMode(before);
+            rightRearVerticalArmMotor.setMode(before);
+        });
+
+        currentAction.start();
+    }
+
+    public void setRearVerticalArmPower(double speed){
         double limitedSpeed = Math.min(Math.max(speed, -0.60), 0.60); // primary motors
-        leftVerticalArmMotor.setPower(limitedSpeed);
-        rightVerticalArmMotor.setPower(limitedSpeed);
+        leftRearVerticalArmMotor.setPower(limitedSpeed);
+        rightRearVerticalArmMotor.setPower(limitedSpeed);
     }
 
     /**
@@ -113,7 +141,7 @@ public class SeasonalRobot extends BaseRobot {
      */
     public void setHorizontalArmPower(double speed){
         // todo needs some way to set/limit distance
-        horizontalArmServo.setPower(speed);
+        horizontalArmMotor.setPower(speed);
     }
 
     public void closeSpecimenClaw(){
@@ -123,10 +151,5 @@ public class SeasonalRobot extends BaseRobot {
     public void openSpecimenClaw(){
         // 1 is hardware aligned to be open
         specimenClawServo.setPosition(.9);
-    }
-
-    public void setAscentMotorSpeeds(double speed){
-        leftAscentMotor.setPower(speed);
-        rightAscentMotor.setPower(speed);
     }
 }

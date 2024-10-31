@@ -75,6 +75,7 @@ public class BaseRobot {
         return out;
     }
 
+    // todo this limelight stuff shouldn't be here, move back
     public List<LLResultTypes.FiducialResult> getLastLimelightAprilTagsRaw(){
         return limelight.getLatestResult().getFiducialResults();
     }
