@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import java.util.ArrayList;
 
 @Autonomous
-public class CalibrationOpmode extends LinearOpMode {
+public class RearCalibrationOpmode extends LinearOpMode {
     DcMotorEx leftVerticalArmMotor;
     DcMotorEx rightVerticalArmMotor;
     @Override
@@ -33,7 +33,7 @@ public class CalibrationOpmode extends LinearOpMode {
         raiseVerticalArm();
 
         telemetry.addData("Left Arm Ticks: ", leftVerticalArmMotor.getCurrentPosition());
-        telemetry.addData("Right Arm Ticks: ", rightVerticalArmMotor.getCurrentPosition());
+        telemetry.addData("Right Arm Ticks (important): ", rightVerticalArmMotor.getCurrentPosition());
         telemetry.addData("Average: ", (leftVerticalArmMotor.getCurrentPosition() + rightVerticalArmMotor.getCurrentPosition()) / 2);
 
         telemetry.update();
@@ -41,40 +41,10 @@ public class CalibrationOpmode extends LinearOpMode {
         while (opModeIsActive());
     }
 
-    public void lowerVerticalArm(){
-        ArrayList<Integer> lastFiveChanges = new ArrayList<>(5);
-        float avgChange = 999;
-        int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-
-        leftVerticalArmMotor.setPower(-0.15);
-        rightVerticalArmMotor.setPower(-0.15);
-
-        // run motor as long as not stopped
-        while(avgChange >= 5 && opModeIsActive()){
-            avgChange = 0;
-            while(lastFiveChanges.size() < 5 && opModeIsActive()){
-                // get 5 starting values
-                lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-                lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-                sleep(100);
-            }
-            sleep(50);
-            // take out the oldest one & add in a new one
-            lastFiveChanges.remove(0);
-            lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-            lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
-            for (int num : lastFiveChanges) { avgChange += num; }
-            avgChange /= lastFiveChanges.size();
-        }
-
-        leftVerticalArmMotor.setPower(0);
-        rightVerticalArmMotor.setPower(0);
-    }
-
     public void raiseVerticalArm(){
         ArrayList<Integer> lastFiveChanges = new ArrayList<>(5);
         float avgChange = 999;
-        int lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
+        int lastEncoderPos = rightVerticalArmMotor.getCurrentPosition();
 
         leftVerticalArmMotor.setPower(0.15);
         rightVerticalArmMotor.setPower(0.15);
@@ -84,19 +54,19 @@ public class CalibrationOpmode extends LinearOpMode {
             avgChange = 0;
             while(lastFiveChanges.size() < 5 && opModeIsActive()){
                 // get 5 starting values
-                lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-                lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
+                lastFiveChanges.add(Math.abs(rightVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
+                lastEncoderPos = rightVerticalArmMotor.getCurrentPosition();
                 sleep(100);
             }
             sleep(50);
             // take out the oldest one & add in a new one
             lastFiveChanges.remove(0);
-            lastFiveChanges.add(Math.abs(leftVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
-            lastEncoderPos = leftVerticalArmMotor.getCurrentPosition();
+            lastFiveChanges.add(Math.abs(rightVerticalArmMotor.getCurrentPosition() - lastEncoderPos));
+            lastEncoderPos = rightVerticalArmMotor.getCurrentPosition();
             for (int num : lastFiveChanges) { avgChange += num; }
             avgChange /= lastFiveChanges.size();
             telemetry.addData("Left Arm Ticks: ", leftVerticalArmMotor.getCurrentPosition());
-            telemetry.addData("Right Arm Ticks: ", rightVerticalArmMotor.getCurrentPosition());
+            telemetry.addData("Right Arm Ticks (important): ", rightVerticalArmMotor.getCurrentPosition());
             telemetry.addData("Average: ", (leftVerticalArmMotor.getCurrentPosition() + rightVerticalArmMotor.getCurrentPosition()) / 2);
             telemetry.update();
         }

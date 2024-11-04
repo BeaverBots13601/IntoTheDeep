@@ -216,8 +216,8 @@ public class BaseRobot {
 
     private IMU createImu() {
         BNO055IMUNew.Parameters imuParameters = new BNO055IMUNew.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP, // must be adjusted if CH moves
-                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT, // must be adjusted if CH moves
+                RevHubOrientationOnRobot.UsbFacingDirection.UP
         ));
 
         IMU imu = opMode.hardwareMap.get(IMU.class, "imu");

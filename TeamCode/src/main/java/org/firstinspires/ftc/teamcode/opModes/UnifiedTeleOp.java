@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
+import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
 
 public abstract class UnifiedTeleOp extends LinearOpMode {
     /** This field may be immediately changed by the switch state update. */
@@ -60,6 +61,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             updateButtons();
             updateSwitchState(robot.getSwitchState());
             robot.writeToTelemetry("Current Orientation Mode", orientationMode);
+            robot.writeToTelemetry("Slides In Manual Mode", manualVerticalMode);
 
             double speedNow = constants.currentSpeedMode.getNumericalSpeed();
 
@@ -114,8 +116,22 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
             robot.writeToTelemetry("Vertical Arm Power", a);
 
-            if (manualVerticalMode && ascentMode) typedRobot.setRearVerticalArmPower(a);
-            if (manualVerticalMode && !ascentMode) // todo new vertical
+            // These limiters are prone to drift maybe? Depends how precise motors are. Investigate
+            // If drivers report issues, look into making a reset button.
+            if (manualVerticalMode && ascentMode) {
+                LimiterState lim = typedRobot.getRearVerticalSlideLimiterState();
+                // at lower limit: only allow positive speeds
+                if(lim == LimiterState.LOW) typedRobot.setRearVerticalArmPower(Math.max(0, a));
+                // at upper limit: only allow negative speeds
+                if(lim == LimiterState.HIGH) typedRobot.setRearVerticalArmPower(Math.min(0, a));
+                if(lim == LimiterState.NONE) typedRobot.setRearVerticalArmPower(a);
+            }
+            if (manualVerticalMode && !ascentMode) {
+                LimiterState lim = typedRobot.getSpecimenSlideLimiterState();
+                if(lim == LimiterState.LOW) typedRobot.setRearVerticalArmPower(Math.max(0, a));
+                if(lim == LimiterState.HIGH) typedRobot.setRearVerticalArmPower(Math.min(0, a));
+                if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
+            }
 
             robot.updateTelemetry();
         }
@@ -143,12 +159,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         if (typedRobot == null) return;
 
         // submersible grabber ctrls (gp 1)
-        if (currentGamepadOne.right_bumper && !previousGamepadOne.right_bumper) {
-            typedRobot.rotateWristDown();
-        }
-        if (currentGamepadOne.left_bumper && !previousGamepadOne.left_bumper) {
-            typedRobot.rotateWristUp();
-        }
         if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
             typedRobot.toggleIntake();
         }
@@ -167,10 +177,10 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             }
         }
 
-        // ascent ctrls (gp2)
-        if (currentGamepadTwo.ps && !previousGamepadTwo.ps){
+        // ascent ctrls (gp2) (rising edge)
+        if (!currentGamepadTwo.ps && previousGamepadTwo.ps){
             if(ascentMode){
-                typedRobot.setRearVerticalArmPower(0.6); // climb
+                typedRobot.setRearVerticalArmPower(-0.6); // climb
                 while (opModeIsActive()) { if (currentGamepadTwo.ps && !previousGamepadTwo.ps) break; } // run until abort
                 ascentMode = false;
             } else {
@@ -184,6 +194,27 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         // manual verticals (gp2)
         if (currentGamepadTwo.dpad_right && !previousGamepadTwo.dpad_right){
             manualVerticalMode = !manualVerticalMode;
+            if (!manualVerticalMode){
+                // reset powers to 0 to avoid state where slides are stuck at power lvl
+                typedRobot.setRearVerticalArmPower(0);
+                typedRobot.setSpecimenSlidePower(0);
+            }
+        }
+
+        // Preset height controls (gp2) (automatic)
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_up && !previousGamepadTwo.dpad_up){
+            typedRobot.raiseSpecimenSlideToHeightAsync(0.8); // todo all guesstimates: tune
+        }
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_left && !previousGamepadTwo.dpad_left){
+            typedRobot.raiseSpecimenSlideToHeightAsync(0.5); // low chamber
+        }
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_down && !previousGamepadTwo.dpad_down){
+            typedRobot.raiseSpecimenSlideToHeightAsync(0); // ground
+        }
+
+        // Clip specimen to chamber (gp2) (automatic)
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.triangle && !previousGamepadTwo.triangle){
+            typedRobot.raiseSpecimenSlideToHeightAsync(typedRobot.getSpecimenSlideHeight() - 0.15); // decrease height
         }
     }
 

@@ -58,5 +58,6 @@ public class constants {
     public static final double WHEEL_DIAMETER = 3.5;
     public static final double ROBOT_DIAMETER = 13.75;
 
-    public static int CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS = 4000;
+    public static final int CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS = 4000;
+    public static final int CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS = 2200;
 }
