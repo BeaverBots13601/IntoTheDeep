@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opModes;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.ftccommon.external.OnCreate;
 
 import java.util.SortedSet;
 
+@Disabled
 @Autonomous
 public class Minimum extends LinearOpMode {
     @Override

@@ -31,14 +31,9 @@ public class SeasonalRobot extends BaseRobot {
         horizontalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         specimenClawServo = setUpServo("specimenClawServo");
         intakeServo = opmode.hardwareMap.get(CRServo.class, "intakeServo");
-        intakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeServo.setPower(0); // remove potential floating state
         specimenSlideMotor = createDefaultMotor("specimenSlideMotor");
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        //wristServo.setPosition(0.31); // angles down. NOTE this breaks the Shark-2 horizontal servo
-        // for some ungodly reason. It just makes it spin constantly. Not anyones fault (except ftc maybe)
-        // do not comment this in unless something has changed.
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -47,7 +42,7 @@ public class SeasonalRobot extends BaseRobot {
     */
 
     public void toggleIntake(){
-        intakeServo.setPower(intakeServo.getPower() == 0 ? 1 : 0);
+        intakeServo.setPower(intakeServo.getPower() == 0 ? 0.5 : 0);
     }
 
     public void reverseIntakeDirection(){
@@ -83,8 +78,8 @@ public class SeasonalRobot extends BaseRobot {
             leftRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            leftRearVerticalArmMotor.setPower(0.20);
-            rightRearVerticalArmMotor.setPower(0.20);
+            leftRearVerticalArmMotor.setPower(0.40); // human-controlled uses 70%, see about boosting
+            rightRearVerticalArmMotor.setPower(0.40);
 
             while (rightRearVerticalArmMotor.isBusy() && opMode.opModeIsActive() && !Thread.currentThread().isInterrupted());
 
@@ -97,6 +92,12 @@ public class SeasonalRobot extends BaseRobot {
 
         if(async) { currentAction.start(); return; }
         currentAction.run();
+    }
+
+    public void interruptCurrentRearSlideTask(){
+        if(currentAction != null && currentAction.isAlive()){
+            currentAction.interrupt(); // interrupt current movement if running
+        }
     }
 
     /**
@@ -129,7 +130,7 @@ public class SeasonalRobot extends BaseRobot {
 
             specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            specimenSlideMotor.setPower(0.20);
+            specimenSlideMotor.setPower(1);
 
             while (specimenSlideMotor.isBusy() && opMode.opModeIsActive() && !Thread.currentThread().isInterrupted());
 
@@ -140,6 +141,12 @@ public class SeasonalRobot extends BaseRobot {
 
         if(async) { currentSpecimenSlideAction.start(); return; }
         currentSpecimenSlideAction.run();
+    }
+
+    public void interruptCurrentSpecimenSlideTask(){
+        if(currentSpecimenSlideAction != null && currentSpecimenSlideAction.isAlive()){
+            currentSpecimenSlideAction.interrupt(); // interrupt current movement if running
+        }
     }
 
     public double getSpecimenSlideHeight(){
@@ -181,13 +188,13 @@ public class SeasonalRobot extends BaseRobot {
     }
 
     public LimiterState getSpecimenSlideLimiterState(){
-        if(specimenSlideMotor.getCurrentPosition() < 10) return LimiterState.LOW;
+        if(specimenSlideMotor.getCurrentPosition() < 10) return LimiterState.LOW; // negative: reversed
         if(specimenSlideMotor.getCurrentPosition() > constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS - 10) return LimiterState.HIGH;
         return LimiterState.NONE;
     }
 
     public LimiterState getRearVerticalSlideLimiterState(){
-        if(rightRearVerticalArmMotor.getCurrentPosition() < 10) return LimiterState.LOW;
+        if(rightRearVerticalArmMotor.getCurrentPosition() < 10) return LimiterState.LOW; // negative: reversed
         if(rightRearVerticalArmMotor.getCurrentPosition() > constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS - 10) return LimiterState.HIGH;
         return LimiterState.NONE;
     }

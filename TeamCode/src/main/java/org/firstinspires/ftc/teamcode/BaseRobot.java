@@ -12,6 +12,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -23,6 +24,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 import org.firstinspires.ftc.teamcode.vision.AprilTagModule;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
@@ -65,7 +67,7 @@ public class BaseRobot {
     @Nullable
     private DigitalChannel switch_ = null;
 
-    private final Limelight3A limelight;
+    private final Limelight3A limelight = null;
 
     public ArrayList<AprilTagData> getLastLimelightAprilTags(){
         ArrayList<AprilTagData> out = new ArrayList<>();
@@ -108,9 +110,9 @@ public class BaseRobot {
         } catch (Exception ignored){}
 
 
-        limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(0);
-        limelight.start();
+        //limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
+        //limelight.pipelineSwitch(0);
+        //limelight.start();
     }
 
     /**
@@ -132,6 +134,7 @@ public class BaseRobot {
         for (constants.driveMotorName driveMotorName : constants.driveMotorName.values()) {
             DcMotorEx driveMotor = createDefaultMotor(driveMotorName.name());
             this.driveMotors[driveMotorName.ordinal()] = driveMotor;
+            //this.driveMotors[driveMotorName.ordinal()].setTargetPositionTolerance(10);
         }
     }
 
@@ -150,8 +153,8 @@ public class BaseRobot {
     }
 
     private boolean isDriving() {
-        for (DcMotorEx motor : this.driveMotors) {
-            if (motor.isBusy()) {
+        for (constants.driveMotorName a : constants.driveMotorName.values()){
+            if (a.name().toLowerCase().contains("front") && driveMotors[a.ordinal()].isBusy()){
                 return true;
             }
         }
@@ -210,6 +213,43 @@ public class BaseRobot {
         int targetInches = (int) this.inchesToEncoder(Math.toRadians(degrees) * this.robotDiameter);
         int[] target = new int[]{targetInches, targetInches, -targetInches, -targetInches};
         double[] powers = new double[]{power, power, -power, -power};
+
+        driveEncoded(target, powers);
+    }
+
+    /**
+     * Strafe a certain distance. Might be unreliable?
+     * @param inches The number of inches to move. + = right, - = left.
+     * @param power The speed to move at.
+     */
+    public void driveStrafe(double inches, double power) {
+        int ticks = (int) this.inchesToEncoder(inches);
+        int[] target = new int[] {ticks, -ticks, -ticks, ticks};
+        double[] powers = new double[] {power, -power, -power, power};
+
+        driveEncoded(target, powers);
+    }
+
+    /**
+     * Moves with the mecanum wheels a specified number of inches, without turning.
+     * @param inches The number of inches to move.
+     * @param angle The angle to move at in degrees. 0 would be right, 90 would be forward.
+     * @param power The speed to run at from [0, 1]
+     */
+    public void driveAtAngle(double inches, double angle, double power){
+        // technically pose shouldn't be used in base
+        Pose move = Pose.rotatePosition(inches, 0, Pose.normalizeAngle(Math.toRadians(angle)));
+        double stickRotation = 0; // todo: allow this as argument (to spin while moving)
+
+        double maxPower = Math.max(Math.abs(move.getY()) + Math.abs(move.getX()) + Math.abs(stickRotation), 1);
+        double leftFrontPower = (move.getY() + move.getX() + stickRotation) / maxPower;
+        double leftBackPower = (move.getY() - move.getX() + stickRotation) / maxPower;
+        double rightFrontPower = (move.getY() - move.getX() - stickRotation) / maxPower;
+        double rightBackPower = (move.getY() + move.getX() - stickRotation) / maxPower;
+
+        int[] target = new int[]{(int) inchesToEncoder(leftFrontPower * inches), (int) inchesToEncoder(leftBackPower * inches), (int) inchesToEncoder(rightFrontPower * inches), (int) inchesToEncoder(rightBackPower * inches)};
+        double[] powers = new double[this.driveMotors.length];
+        Arrays.fill(powers, power);
 
         driveEncoded(target, powers);
     }

@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
@@ -14,7 +15,8 @@ import org.firstinspires.ftc.teamcode.constants;
 
 import java.util.List;
 
-@Autonomous(name="Automatic Autonomous", preselectTeleOp = "UnifiedTeleOp")
+@Autonomous(name="Automatic Autonomous")
+@Disabled
 public class UnifiedAutonomous extends LinearOpMode {
     protected enum Locations {
         BlueClose,
@@ -240,20 +242,36 @@ public class UnifiedAutonomous extends LinearOpMode {
             case RedClose:
             case BlueClose: {
                 //far from basket, seam just beyond human player
-                robot.driveInches(4, .5);
-                robot.turnDegrees(-40, .5);
-                robot.driveInches(-28, 0.6);
-                robot.turnDegrees(40, .5);
-                robot.raiseSpecimenSlideToHeight(0.48); // all needs tuning
-                robot.driveInches(4, 0.2);
-                robot.raiseSpecimenSlideToHeight(0.33);
+                robot.raiseSpecimenSlideToHeightAsync(0.7);
+                robot.driveAtAngle(45, 130, 1);
+                robot.raiseSpecimenSlideToHeight(0.45);
                 robot.openSpecimenClaw();
-                sleep(500);
-                robot.driveInches(-18, 0.6);
-                robot.turnDegrees(90, .5);
-                robot.driveInches(46,0.6);
-                robot.turnDegrees(90, .5);
-                robot.driveInches(9, 0.6);
+                sleep(250);
+                robot.raiseSpecimenSlideToHeightAsync(0);
+                robot.driveInches(-1, 1);
+                robot.driveStrafe(33, 1);
+                robot.driveInches(24, 1);
+                robot.driveStrafe(12, 1);
+                robot.driveInches(-40, 1);
+                robot.driveInches(12, 1);
+                sleep(50);
+                robot.turnDegrees(170, .5);
+                sleep(50);
+                robot.driveInches(21, 1);
+                robot.closeSpecimenClaw();
+                sleep(300);
+                robot.raiseSpecimenSlideToHeight(0.1);
+                robot.driveInches(-3, 0.6);
+                robot.raiseSpecimenSlideToHeightAsync(0);
+                robot.turnDegrees(173, .5);
+                robot.driveStrafe(-42, 1); // 48
+                robot.turnDegrees(-15, .5);
+                robot.raiseSpecimenSlideToHeightAsync(.7);
+                robot.driveAtAngle(44, 130, 1); // 43, .8
+                robot.raiseSpecimenSlideToHeight(0.45);
+                robot.openSpecimenClaw();
+                sleep(250);
+                robot.driveAtAngle(60, -40, 1);
                 // put our current heading in constants for field teleopmodes to read later
                 constants.ROBOT_HEADING = robot.getImuAngle() + Math.PI; // add pi, reversed
                 /*robot.setHorizontalArmPower(0.5);

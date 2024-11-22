@@ -32,9 +32,9 @@ public class Pose {
     }
 
     /**
-     * @param x x value of the point
-     * @param y y value of the point
-     * @param angle angle change of the point
+     * @param x x value of the point (positive = forward?)
+     * @param y y value of the point (positive = right?)
+     * @param angle angle change of the point (radians)
      * @return rotation of point (x, y) around angle
      */
     public static Pose rotatePosition(double x, double y, double angle) {
