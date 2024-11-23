@@ -16,7 +16,10 @@ public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx horizontalArmMotor;
     private final DcMotorEx specimenSlideMotor;
     private final Servo specimenClawServo;
-    private final CRServo intakeServo;
+    //private final CRServo intakeServo;
+    private final Servo wristServo;
+    private final Servo clawServo;
+    private final CRServo rotationServo;
 
     // candidate to be moved to base robot
 
@@ -30,10 +33,15 @@ public class SeasonalRobot extends BaseRobot {
         horizontalArmMotor = createDefaultMotor("horizontalArmMotor");
         horizontalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         specimenClawServo = setUpServo("specimenClawServo");
-        intakeServo = opmode.hardwareMap.get(CRServo.class, "intakeServo");
-        intakeServo.setPower(0); // remove potential floating state
+        //intakeServo = opmode.hardwareMap.get(CRServo.class, "intakeServo");
+        //intakeServo.setPower(0); // remove potential floating state
         specimenSlideMotor = createDefaultMotor("specimenSlideMotor");
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        wristServo = setUpServo("wristServo");
+        clawServo = setUpServo("clawServo");
+        rotationServo = opmode.hardwareMap.get(CRServo.class, "rotationServo");
+        wristServo.setPosition(0.45);
+        closeClawMachine();
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -41,19 +49,19 @@ public class SeasonalRobot extends BaseRobot {
     won't need that next year probably, put it here.
     */
 
-    public void toggleIntake(){
-        intakeServo.setPower(intakeServo.getPower() == 0 ? 0.5 : 0);
-    }
+//    public void toggleIntake(){
+//        intakeServo.setPower(intakeServo.getPower() == 0 ? 0.5 : 0);
+//    }
 
-    public void reverseIntakeDirection(){
-        if (intakeServo.getDirection() == DcMotorSimple.Direction.FORWARD) {
-            intakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        } else {
-            intakeServo.setDirection(DcMotorSimple.Direction.FORWARD);
-        }
-        toggleIntake();
-        toggleIntake();
-    }
+//    public void reverseIntakeDirection(){
+//        if (intakeServo.getDirection() == DcMotorSimple.Direction.FORWARD) {
+//            intakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
+//        } else {
+//            intakeServo.setDirection(DcMotorSimple.Direction.FORWARD);
+//        }
+//        toggleIntake();
+//        toggleIntake();
+//    }
 
     public void raiseRearVerticalArmsToHeight(double height){
         raiseRearVerticalsToHeightInternal(height, false);
@@ -197,5 +205,40 @@ public class SeasonalRobot extends BaseRobot {
         if(rightRearVerticalArmMotor.getCurrentPosition() < 10) return LimiterState.LOW; // negative: reversed
         if(rightRearVerticalArmMotor.getCurrentPosition() > constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS - 10) return LimiterState.HIGH;
         return LimiterState.NONE;
+    }
+
+    public void openClawMachine(){
+        clawServo.setPosition(0.15);
+    }
+
+    public void closeClawMachine(){
+        clawServo.setPosition(0.33);
+    }
+
+    private enum wristPos {
+        UP,
+        MID,
+        DOWN
+    }
+    private wristPos currentPos = wristPos.MID;
+
+    public void rotateWristDown(){
+        if(currentPos == wristPos.UP){
+            wristServo.setPosition(0.45); // 45 DEG SIDE
+            currentPos = wristPos.MID;
+        } else {
+            wristServo.setPosition(0.6); // 90 DEG DOWN
+            currentPos = wristPos.DOWN;
+        }
+    }
+
+    public void rotateWristUp(){
+        wristServo.setPosition(.3);
+        currentPos = wristPos.UP;
+        // 0 has been mechanically-aligned to be facing mostly forward on the bot (thx philip)
+    }
+
+    public void setClawRotation(double speed){
+        rotationServo.setPower(speed);
     }
 }

@@ -249,7 +249,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 sleep(250);
                 robot.raiseSpecimenSlideToHeightAsync(0);
                 robot.driveInches(-1, 1);
-                robot.driveStrafe(33, 1);
+                robot.driveStrafe(32.5, 1);
                 robot.driveInches(24, 1);
                 robot.driveStrafe(12, 1);
                 robot.driveInches(-40, 1);
@@ -257,7 +257,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 sleep(50);
                 robot.turnDegrees(170, .5);
                 sleep(50);
-                robot.driveInches(21, 1);
+                robot.driveInches(26, 1); // 21
                 robot.closeSpecimenClaw();
                 sleep(300);
                 robot.raiseSpecimenSlideToHeight(0.1);

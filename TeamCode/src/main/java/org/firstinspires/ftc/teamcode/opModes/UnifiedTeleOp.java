@@ -54,6 +54,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         previousGamepadOne.copy(currentGamepadOne);
         previousGamepadTwo.copy(currentGamepadTwo);
 
+
         waitForStart();
         while (opModeIsActive()) {
             currentGamepadOne.copy(gamepad1);
@@ -67,8 +68,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
             float stickX = gamepad1.left_stick_x * tmp_deadzoneadjust;
             float stickY = -gamepad1.left_stick_y * tmp_deadzoneadjust;
-            float
-                    stickRotation = gamepad1.right_stick_x * tmp_deadzoneadjust;
+            float stickRotation = gamepad1.right_stick_x * tmp_deadzoneadjust;
 
             double directionRotation = 0;
             if (orientationMode == DriveMode.FIELD) {
@@ -140,11 +140,23 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
             }
 
+            // rotation (gp2)
+            if (currentGamepadOne.left_bumper || currentGamepadOne.right_bumper) {
+                if (currentGamepadOne.left_bumper) {
+                    typedRobot.setClawRotation(.25);
+                } else {
+                    typedRobot.setClawRotation(-.25);
+                }
+            } else {
+                typedRobot.setClawRotation(0);
+            }
+
             robot.updateTelemetry();
         }
     }
 
     private boolean specimenClawOpen = true;
+    private boolean clawMachineOpen = false;
     private void updateButtons() {
         // put button actions here in this format
 
@@ -166,11 +178,26 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         if (typedRobot == null) return;
 
         // submersible grabber ctrls (gp 1)
-        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
-            typedRobot.toggleIntake();
+//        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
+//            typedRobot.toggleIntake();
+//        }
+//        if (currentGamepadOne.circle && !previousGamepadOne.circle){
+//            typedRobot.reverseIntakeDirection();
+//        }
+        if (currentGamepadOne.circle && !previousGamepadOne.circle) {
+            typedRobot.rotateWristDown();
         }
-        if (currentGamepadOne.circle && !previousGamepadOne.circle){
-            typedRobot.reverseIntakeDirection();
+        if (currentGamepadOne.triangle && !previousGamepadOne.triangle) {
+            typedRobot.rotateWristUp();
+        }
+        if (currentGamepadOne.square && !previousGamepadOne.square) {
+            if (clawMachineOpen){
+                typedRobot.closeClawMachine();
+                clawMachineOpen = false;
+            } else {
+                typedRobot.openClawMachine();
+                clawMachineOpen = true;
+            }
         }
 
         // wall specimen grabber ctrl (gp 2)
@@ -189,7 +216,11 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             if(ascentMode){
                 typedRobot.setRearVerticalArmPower(-0.6); // climb
                 while (opModeIsActive() && gamepad2.ps); // wait until button not pressed
-                while (opModeIsActive()) { if (gamepad2.ps) break; } // run until abort
+                while (opModeIsActive()) {
+                    if (gamepad2.ps) break;
+                    typedRobot.writeToTelemetry("ASCENDING", "");
+                    typedRobot.updateTelemetry();
+                } // run until abort
                 typedRobot.setRearVerticalArmPower(0);
                 ascentMode = false;
                 manualVerticalMode = false;

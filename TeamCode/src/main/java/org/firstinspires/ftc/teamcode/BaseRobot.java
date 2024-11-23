@@ -150,6 +150,7 @@ public class BaseRobot {
         Arrays.fill(powers, 0.0);
         setDriveMotors(powers, DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setDriveMotors(powers, DcMotor.RunMode.RUN_USING_ENCODER);
+        try { Thread.sleep(50); } catch (Exception ignored) {}
     }
 
     private boolean isDriving() {
