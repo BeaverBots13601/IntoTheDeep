@@ -140,9 +140,9 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
             }
 
-            // rotation (gp2)
+            // rotation (gp1)
             if (currentGamepadOne.left_bumper || currentGamepadOne.right_bumper) {
-                if (currentGamepadOne.left_bumper) {
+                if (currentGamepadOne.right_bumper) {
                     typedRobot.setClawRotation(.25);
                 } else {
                     typedRobot.setClawRotation(-.25);
