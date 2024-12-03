@@ -178,18 +178,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         if (typedRobot == null) return;
 
         // submersible grabber ctrls (gp 1)
-//        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
-//            typedRobot.toggleIntake();
-//        }
-//        if (currentGamepadOne.circle && !previousGamepadOne.circle){
-//            typedRobot.reverseIntakeDirection();
-//        }
-        if (currentGamepadOne.circle && !previousGamepadOne.circle) {
-            typedRobot.rotateWristDown();
-        }
-        if (currentGamepadOne.triangle && !previousGamepadOne.triangle) {
-            typedRobot.rotateWristUp();
-        }
         if (currentGamepadOne.square && !previousGamepadOne.square) {
             if (clawMachineOpen){
                 typedRobot.closeClawMachine();

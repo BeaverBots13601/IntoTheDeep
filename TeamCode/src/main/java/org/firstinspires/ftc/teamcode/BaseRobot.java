@@ -155,7 +155,7 @@ public class BaseRobot {
 
     private boolean isDriving() {
         for (constants.driveMotorName a : constants.driveMotorName.values()){
-            if (a.name().toLowerCase().contains("front") && driveMotors[a.ordinal()].isBusy()){
+            if ((a.name().equals("rightFront")|| a.name().equals("leftBack")) && driveMotors[a.ordinal()].isBusy()){
                 return true;
             }
         }

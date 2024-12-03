@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-// left-front & right-front are our drive motors for measuring (port 0 & 3 issue)
+// right-front (par0) & left-back (perp) are our drive motors for measuring (port 0 & 3 issue)
 // right-rear slide & specimen slide our precise motors (port 0 & 3 issue)
 
 public class SeasonalRobot extends BaseRobot {
@@ -20,8 +20,6 @@ public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx horizontalArmMotor;
     private final DcMotorEx specimenSlideMotor;
     private final Servo specimenClawServo;
-    //private final CRServo intakeServo;
-    private final Servo wristServo;
     private final Servo clawServo;
     private final CRServo rotationServo;
 
@@ -41,10 +39,8 @@ public class SeasonalRobot extends BaseRobot {
         //intakeServo.setPower(0); // remove potential floating state
         specimenSlideMotor = createDefaultMotor("specimenSlideMotor");
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        wristServo = setUpServo("wristServo");
         clawServo = setUpServo("clawServo");
         rotationServo = opmode.hardwareMap.get(CRServo.class, "rotationServo");
-        wristServo.setPosition(0.45);
         closeClawMachine();
     }
     /*
@@ -249,29 +245,6 @@ public class SeasonalRobot extends BaseRobot {
 
     public void closeClawMachine(){
         clawServo.setPosition(0.33);
-    }
-
-    private enum wristPos {
-        UP,
-        MID,
-        DOWN
-    }
-    private wristPos currentPos = wristPos.MID;
-
-    public void rotateWristDown(){
-        if(currentPos == wristPos.UP){
-            wristServo.setPosition(0.45); // 45 DEG SIDE
-            currentPos = wristPos.MID;
-        } else {
-            wristServo.setPosition(0.6); // 90 DEG DOWN
-            currentPos = wristPos.DOWN;
-        }
-    }
-
-    public void rotateWristUp(){
-        wristServo.setPosition(.3);
-        currentPos = wristPos.UP;
-        // 0 has been mechanically-aligned to be facing mostly forward on the bot (thx philip)
     }
 
     public void setClawRotation(double speed){
