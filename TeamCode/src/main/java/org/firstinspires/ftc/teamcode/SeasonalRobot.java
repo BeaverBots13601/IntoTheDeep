@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -114,6 +118,38 @@ public class SeasonalRobot extends BaseRobot {
      */
     public void raiseSpecimenSlideToHeight(double height){
         raiseSpecimenSlideToHeightInternal(height, false);
+    }
+
+    public Action roadrunnerRaiseSpecimenSlideToHeight(double height){
+        return new Action() {
+            private boolean initialized = false;
+            private DcMotor.RunMode before;
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (!initialized){
+                    before = specimenSlideMotor.getMode();
+
+                    specimenSlideMotor.setTargetPosition((int) (constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * height));
+
+                    specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    specimenSlideMotor.setPower(1);
+
+                    initialized = true;
+                }
+
+                telemetryPacket.put("Motor At", specimenSlideMotor.getCurrentPosition());
+                telemetryPacket.put("Motor Moving To", specimenSlideMotor.getTargetPosition());
+
+                if(specimenSlideMotor.isBusy()) return false;
+
+                specimenSlideMotor.setPower(0);
+
+                specimenSlideMotor.setMode(before);
+
+                return true;
+            }
+        };
     }
 
     /**

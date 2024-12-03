@@ -2,6 +2,14 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import androidx.annotation.Nullable;
 
+import com.acmerobotics.roadrunner.InstantAction;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -9,6 +17,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
+import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
@@ -33,6 +42,7 @@ public class UnifiedAutonomous extends LinearOpMode {
     protected Locations currentLocation;
     protected Path pathToFollow = Path.STANDARD;
     private PropIdentificationVisualPipeline line;
+    private MecanumDrive roadrunnerDrive;
     public void runOpMode(){
         constants.ROBOT_HEADING = 0;
         if(currentLocation == null) currentLocation = Locations.Unknown;
@@ -242,7 +252,65 @@ public class UnifiedAutonomous extends LinearOpMode {
             case RedClose:
             case BlueClose: {
                 //far from basket, seam just beyond human player
-                robot.raiseSpecimenSlideToHeightAsync(0.7);
+                Pose2d startPose = new Pose2d(-60, -24, 0);
+                roadrunnerDrive = new MecanumDrive(hardwareMap, startPose);
+                TrajectoryActionBuilder toChamber = roadrunnerDrive.actionBuilder(startPose)
+                        .splineToConstantHeading(new Vector2d(-36, 0), 0);
+
+                TrajectoryActionBuilder intoChamber = toChamber.endTrajectory().fresh()
+                        .splineToConstantHeading(new Vector2d(-34, 0), 0);
+
+                TrajectoryActionBuilder chamberToHumanPlayer = toChamber.endTrajectory().fresh()
+                        .splineToConstantHeading(new Vector2d(-36, -36), 0)
+                        .splineToConstantHeading(new Vector2d(-12, -36), 0)
+                        .splineToConstantHeading(new Vector2d(-12, -48), 0)
+                        .splineToConstantHeading(new Vector2d(-54, -48), 0)
+                        .splineToConstantHeading(new Vector2d(-30, -48), 0)
+                        .splineTo(new Vector2d(-30, -48), Math.PI / 2)
+                        .splineToConstantHeading(new Vector2d(-12, -48), Math.PI / 2)
+                        .splineToConstantHeading(new Vector2d(-12, -60), Math.PI / 2)
+                        .splineToConstantHeading(new Vector2d(-54, -60), Math.PI / 2)
+                        .splineTo(new Vector2d(-30, -48), Math.PI)
+                        .splineToConstantHeading(new Vector2d(-60, -48), Math.PI);
+
+                TrajectoryActionBuilder humanPlayerToChamber = chamberToHumanPlayer.endTrajectory().fresh()
+                        .splineTo(new Vector2d(-28, -48), 0)
+                        .splineToConstantHeading(new Vector2d(-36, 0), 0);
+
+                TrajectoryActionBuilder inChamberToPark = intoChamber.endTrajectory().fresh()
+                                .splineToConstantHeading(new Vector2d(-60, -60), 0);
+
+                Actions.runBlocking(new SequentialAction(
+                        new ParallelAction(
+                            toChamber.build(),
+                            new InstantAction(() -> robot.raiseSpecimenSlideToHeightAsync(0.7))
+                        ),
+                        intoChamber.build(),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.45),
+                        new InstantAction(robot::openSpecimenClaw),
+                        new SleepAction(.25),
+                        new ParallelAction(
+                                new SequentialAction(
+                                        toChamber.build(), // back up
+                                        chamberToHumanPlayer.build()
+                                ),
+                                new InstantAction(() -> robot.raiseSpecimenSlideToHeightAsync(0))
+                        ),
+                        new InstantAction(robot::closeSpecimenClaw),
+                        new SleepAction(0.3),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.1),
+                        new ParallelAction(
+                                humanPlayerToChamber.build(),
+                                new InstantAction(() -> robot.raiseSpecimenSlideToHeightAsync(0.7))
+                        ),
+                        intoChamber.build(),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.45),
+                        new InstantAction(robot::openSpecimenClaw),
+                        new SleepAction(.25),
+                        inChamberToPark.build()
+                ));
+
+                /*robot.raiseSpecimenSlideToHeightAsync(0.7);
                 robot.driveAtAngle(45, 130, 1);
                 robot.raiseSpecimenSlideToHeight(0.45);
                 robot.openSpecimenClaw();
@@ -271,7 +339,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                 robot.raiseSpecimenSlideToHeight(0.45);
                 robot.openSpecimenClaw();
                 sleep(250);
-                robot.driveAtAngle(60, -40, 1);
+                robot.driveAtAngle(60, -40, 1);*/
                 // put our current heading in constants for field teleopmodes to read later
                 constants.ROBOT_HEADING = robot.getImuAngle() + Math.PI; // add pi, reversed
                 /*robot.setHorizontalArmPower(0.5);

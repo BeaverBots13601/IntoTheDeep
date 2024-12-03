@@ -133,6 +133,7 @@ public class BaseRobot {
     private void createDriveMotors() {
         for (constants.driveMotorName driveMotorName : constants.driveMotorName.values()) {
             DcMotorEx driveMotor = createDefaultMotor(driveMotorName.name());
+            driveMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             this.driveMotors[driveMotorName.ordinal()] = driveMotor;
             //this.driveMotors[driveMotorName.ordinal()].setTargetPositionTolerance(10);
         }
@@ -256,8 +257,8 @@ public class BaseRobot {
 
     private IMU createImu() {
         BNO055IMUNew.Parameters imuParameters = new BNO055IMUNew.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT, // must be adjusted if CH moves
-                RevHubOrientationOnRobot.UsbFacingDirection.UP
+                RevHubOrientationOnRobot.LogoFacingDirection.UP, // must be adjusted if CH moves
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT
         ));
 
         IMU imu = opMode.hardwareMap.get(IMU.class, "imu");
