@@ -13,11 +13,17 @@ public class ClawCalibrationOpmode extends LinearOpMode {
 
         waitForStart();
 
-        clawServo.setPosition(.5); // open
-        while (!gamepad1.square && opModeIsActive());
-        clawServo.setPosition(0); // closed?
-        while (!gamepad1.left_bumper && opModeIsActive());
-        clawServo.setPosition(1); // closed?
-        while (!gamepad1.right_bumper && opModeIsActive());
+        double val = .5;
+        while(opModeIsActive()){
+            if(gamepad1.left_bumper) val += .01;
+            if(gamepad1.right_bumper) val -= .01;
+            clawServo.setPosition(val);
+            sleep(500);
+            telemetry.addData("Val", val);
+            telemetry.update();
+        }
+
+        // 0.4 open
+        // 0.56 closed
     }
 }

@@ -194,117 +194,80 @@ public class UnifiedAutonomous extends LinearOpMode {
             case BlueFar: {
                 //under basket
                 if(pathToFollow == Path.STANDARD){
-                    // low basket & l1 ascent
-                    // facing RIGHT
-                    robot.driveInches(-20, .6);
-                    robot.raiseRearVerticalArmsToHeight(0.1);
-                    robot.driveInches(-12, .6);
-                    robot.setRearVerticalArmPower(0.1);
-                    robot.openSpecimenClaw();
-                    sleep(1000);
-                    robot.setRearVerticalArmPower(0);
-                    robot.driveInches(8, .6);
-                    robot.closeSpecimenClaw();
-                    robot.turnDegrees(-45, .5);
-                    robot.driveInches(17, .6);
-                    robot.turnDegrees(-45, .5);
-                    robot.driveInches(24, .6);
-                    robot.turnDegrees(90, .5);
-                    robot.turnDegrees(-8, 0.6);
-                    robot.raiseRearVerticalArmsToHeight(0.05);
                     // put our current heading in constants for field teleopmodes to read later
                     //constants.ROBOT_HEADING = robot.getImuAngle();
-                    break;
-                } /*else if (pathToFollow == Path.ALTERNATE){
-                    // specimen and l1 ascent
-                    robot.driveInches(-4, .5);
-                    robot.turnDegrees(40, .5);
-                    robot.driveInches(-38, 0.6);
-                    robot.turnDegrees(40, .5);
-                    sleep(1000);
-                    robot.raiseVerticalArmsToHeight(0.08);
-                    robot.driveInches(-6, 0.2);
-                    robot.raiseVerticalArmsToHeight(0.06);
-                    robot.openSpecimenClaw();
-                    robot.driveInches(6, 0.6);
-                    robot.turnDegrees(-90,.5);
-                    robot.driveInches(-48,0.6);
-                    robot.turnDegrees(90,.5);
-                    robot.driveInches(18, .6);
-                    robot.turnDegrees(90, .5);
-                    robot.raiseVerticalArmsToHeight(0.08);
-                    robot.turnDegrees(-8, 0.6);
-                    robot.raiseVerticalArmsToHeight(0.05);
-                    break;
-                }*/
-                // just l1 ascent from basket
-                robot.driveInches(45, .6);
-                robot.turnDegrees(-83, .5);
-                robot.driveInches(-10, .6);
-                robot.raiseRearVerticalArmsToHeight(0.45);
-                robot.driveInches(-4, .6);
-                robot.raiseRearVerticalArmsToHeight(0.4);
-                constants.ROBOT_HEADING = robot.getImuAngle() + (Math.PI / 2);
+                } else {
+                    // just l1 ascent from basket
+                    robot.driveInches(45, .6);
+                    robot.turnDegrees(-83, .5);
+                    robot.driveInches(-10, .6);
+                    robot.raiseRearVerticalArmsToHeight(0.45);
+                    robot.driveInches(-4, .6);
+                    robot.raiseRearVerticalArmsToHeight(0.4);
+                    // put our current heading in constants for field teleopmodes to read later
+                    constants.ROBOT_HEADING = robot.getImuAngle() + (Math.PI / 2);
+                }
                 break;
-                // put our current heading in constants for field teleopmodes to read later
-                //constants.ROBOT_HEADING = robot.getImuAngle();
             }
             case RedClose:
             case BlueClose: {
                 //far from basket, seam just beyond human player
-                Pose2d startPose = new Pose2d(-60, -24, 0);
+                Pose2d startPose = new Pose2d(24, -60, Math.PI / 2);
                 roadrunnerDrive = new MecanumDrive(hardwareMap, startPose);
                 TrajectoryActionBuilder toChamber = roadrunnerDrive.actionBuilder(startPose)
-                        .splineToConstantHeading(new Vector2d(-36, 0), 0);
+                        .splineToConstantHeading(new Vector2d(0, -32), 0);
 
                 TrajectoryActionBuilder intoChamber = toChamber.endTrajectory().fresh()
-                        .splineToConstantHeading(new Vector2d(-34, 0), 0);
+                        .splineToConstantHeading(new Vector2d(0, -30.5), 0);
 
-                TrajectoryActionBuilder chamberToHumanPlayer = toChamber.endTrajectory().fresh()
-                        .splineToConstantHeading(new Vector2d(-36, -36), 0)
-                        .splineToConstantHeading(new Vector2d(-12, -36), 0)
-                        .splineToConstantHeading(new Vector2d(-12, -48), 0)
-                        .splineToConstantHeading(new Vector2d(-54, -48), 0)
-                        .splineToConstantHeading(new Vector2d(-30, -48), 0)
-                        .splineTo(new Vector2d(-30, -48), Math.PI / 2)
-                        .splineToConstantHeading(new Vector2d(-12, -48), Math.PI / 2)
-                        .splineToConstantHeading(new Vector2d(-12, -60), Math.PI / 2)
-                        .splineToConstantHeading(new Vector2d(-54, -60), Math.PI / 2)
-                        .splineTo(new Vector2d(-30, -48), Math.PI)
-                        .splineToConstantHeading(new Vector2d(-60, -48), Math.PI);
+                TrajectoryActionBuilder backUpFromChamber = intoChamber.endTrajectory().fresh()
+                        .splineToConstantHeading(new Vector2d(0, -34), 0);
+
+                TrajectoryActionBuilder chamberToHumanPlayer = backUpFromChamber.endTrajectory().fresh()
+                        .splineToConstantHeading(new Vector2d(36, -34), 0)
+                        .splineToConstantHeading(new Vector2d(36, -6), 0)
+                        .splineToConstantHeading(new Vector2d(45, -6), 0)
+                        .splineToConstantHeading(new Vector2d(45, -54), 0) //push sample to parking zone
+                        .splineTo(new Vector2d(48, -30), Math.PI)
+                        .splineToConstantHeading(new Vector2d(45, -58), Math.PI); //drive to pickup
 
                 TrajectoryActionBuilder humanPlayerToChamber = chamberToHumanPlayer.endTrajectory().fresh()
-                        .splineTo(new Vector2d(-28, -48), 0)
-                        .splineToConstantHeading(new Vector2d(-36, 0), 0);
+                        .splineTo(new Vector2d(0, -36), 0);
 
-                TrajectoryActionBuilder inChamberToPark = intoChamber.endTrajectory().fresh()
-                                .splineToConstantHeading(new Vector2d(-60, -60), 0);
+                TrajectoryActionBuilder intoChamber2 = humanPlayerToChamber.endTrajectory().fresh()
+                        .splineToConstantHeading(new Vector2d(2, -30.5), 0);
+
+                TrajectoryActionBuilder inChamberToPark = intoChamber2.endTrajectory().fresh()
+                                .splineToConstantHeading(new Vector2d(60, -60), 0);
 
                 Actions.runBlocking(new SequentialAction(
                         new ParallelAction(
                             toChamber.build(),
-                            new InstantAction(() -> robot.raiseSpecimenSlideToHeightAsync(0.7))
+                            robot.roadrunnerRaiseSpecimenSlideToHeight(0.7)
                         ),
                         intoChamber.build(),
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.45),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.4),
+                        new SleepAction(.25),
                         new InstantAction(robot::openSpecimenClaw),
                         new SleepAction(.25),
                         new ParallelAction(
                                 new SequentialAction(
-                                        toChamber.build(), // back up
+                                        backUpFromChamber.build(), // back up
                                         chamberToHumanPlayer.build()
                                 ),
+                                // replace me w/
                                 new InstantAction(() -> robot.raiseSpecimenSlideToHeightAsync(0))
                         ),
+                        new SleepAction(0.3),
                         new InstantAction(robot::closeSpecimenClaw),
                         new SleepAction(0.3),
                         robot.roadrunnerRaiseSpecimenSlideToHeight(0.1),
-                        new ParallelAction(
-                                humanPlayerToChamber.build(),
-                                new InstantAction(() -> robot.raiseSpecimenSlideToHeightAsync(0.7))
-                        ),
-                        intoChamber.build(),
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.45),
+                        humanPlayerToChamber.build(),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.7),
+                        new SleepAction(.80),
+                        intoChamber2.build(),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.4),
+                        new SleepAction(.25),
                         new InstantAction(robot::openSpecimenClaw),
                         new SleepAction(.25),
                         inChamberToPark.build()

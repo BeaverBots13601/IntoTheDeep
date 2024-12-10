@@ -1,17 +1,19 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class UnifiedTeleOp extends LinearOpMode {
     /** This field may be immediately changed by the switch state update. */
@@ -34,6 +36,8 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         FIELD,
         ROBOT
     }
+
+    private List<Action> running = new ArrayList<>();
 
     public void runOpMode() {
         if (configurationMode == RobotConfiguration.RESTRICTED) {
@@ -95,7 +99,12 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             robot.writeToTelemetry("RightBackPower", rightBackPower);
             robot.writeToTelemetry("Current Speed Mode", constants.currentSpeedMode);
 
-            robot.setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            List<Action> continued = new ArrayList<>();
+            for(Action action : running){
+                if(action.run(new TelemetryPacket())) continued.add(action);
+            }
 
             previousGamepadOne.copy(currentGamepadOne);
             previousGamepadTwo.copy(currentGamepadTwo);
@@ -107,7 +116,13 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             //robot.writeToTelemetry("Limelight Reported Alpha", robotPos.getOrientation().getYaw(AngleUnit.RADIANS));
 
             // After this, can use SeasonalRobot
-            if(typedRobot == null) { robot.updateTelemetry(); continue; }
+            if(typedRobot == null) {
+                previousGamepadOne.copy(currentGamepadOne);
+                previousGamepadTwo.copy(currentGamepadTwo);
+                running = continued;
+                robot.updateTelemetry();
+                continue;
+            }
 
             // horizontal arm (gp 1)
             robot.writeToTelemetry("Horizontal Arm Power", currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
@@ -151,6 +166,9 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 typedRobot.setClawRotation(0);
             }
 
+            previousGamepadOne.copy(currentGamepadOne);
+            previousGamepadTwo.copy(currentGamepadTwo);
+            running = continued;
             robot.updateTelemetry();
         }
     }

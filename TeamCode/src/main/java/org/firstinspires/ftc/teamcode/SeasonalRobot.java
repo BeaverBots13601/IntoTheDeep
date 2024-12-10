@@ -71,6 +71,43 @@ public class SeasonalRobot extends BaseRobot {
         raiseRearVerticalsToHeightInternal(height, true);
     }
 
+    public Action roadrunnerMoveRearVerticalSlidesToHeight(double height){
+        return new Action() {
+            private boolean initialized = false;
+            private DcMotor.RunMode before;
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if(!initialized){
+                    before = leftRearVerticalArmMotor.getMode();
+
+                    rightRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
+                    leftRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
+
+                    leftRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    leftRearVerticalArmMotor.setPower(0.40); // human-controlled uses 70%, see about boosting
+                    rightRearVerticalArmMotor.setPower(0.40);
+
+                    initialized = true;
+                }
+
+                telemetryPacket.put("Motor At", leftRearVerticalArmMotor.getCurrentPosition());
+                telemetryPacket.put("Motor Moving To", leftRearVerticalArmMotor.getTargetPosition());
+
+                if(leftRearVerticalArmMotor.isBusy()) return false;
+
+                leftRearVerticalArmMotor.setPower(0);
+                rightRearVerticalArmMotor.setPower(0);
+
+                leftRearVerticalArmMotor.setMode(before);
+                rightRearVerticalArmMotor.setMode(before);
+
+                return true;
+            }
+        };
+    }
+
     private Thread currentAction = null;
     private void raiseRearVerticalsToHeightInternal(double height, boolean async){
         if(async && currentAction != null && currentAction.isAlive()){
@@ -240,11 +277,11 @@ public class SeasonalRobot extends BaseRobot {
     }
 
     public void openClawMachine(){
-        clawServo.setPosition(0.15);
+        clawServo.setPosition(0.4);
     }
 
     public void closeClawMachine(){
-        clawServo.setPosition(0.33);
+        clawServo.setPosition(0.56);
     }
 
     public void setClawRotation(double speed){
