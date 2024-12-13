@@ -160,15 +160,19 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer = chamberToHumanPlayerPath.build();
 
         TrajectoryActionBuilder intermediatePath = chamberToHumanPlayerPath.endTrajectory().fresh()
-                .splineToConstantHeading(new Vector2d(35, -12), 0)
-                .splineToConstantHeading(new Vector2d(45, -12), 0)
-                .splineToConstantHeading(new Vector2d(45, -54), 0) //push sample to parking zone
-                .splineTo(new Vector2d(48, -30), Math.PI)
-                .splineToConstantHeading(new Vector2d(45, -58.5), Math.PI); //drive to pickup
+                .splineToConstantHeading(new Vector2d(35, -8), 0);
 
         Action intermediate = intermediatePath.build();
 
-        TrajectoryActionBuilder humanPlayerToChamberPath = intermediatePath.endTrajectory().fresh()
+        TrajectoryActionBuilder intermediate2Path = intermediatePath.endTrajectory().fresh()
+                .splineToConstantHeading(new Vector2d(45, -12), 0)
+                .splineToConstantHeading(new Vector2d(45, -54), 0) //push sample to parking zone
+                .splineTo(new Vector2d(44, -30), Math.PI)
+                .splineToConstantHeading(new Vector2d(45, -58.5), Math.PI); //drive to pickup
+
+        Action intermediate2 = intermediate2Path.build();
+
+        TrajectoryActionBuilder humanPlayerToChamberPath = intermediate2Path.endTrajectory().fresh()
                 .splineTo(new Vector2d(0, -36.5), 0);
 
         Action humanPlayerToChamber = humanPlayerToChamberPath.build();
@@ -180,7 +184,7 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         TrajectoryActionBuilder toHumanPlayerPath = intoChamber2Path.endTrajectory().fresh()
                 .splineToConstantHeading(new Vector2d(0, -32), 0)
-                .splineTo(new Vector2d(45, -58.5), Math.PI);
+                .splineTo(new Vector2d(45, -59), Math.PI);
 
         Action toHumanPlayer = toHumanPlayerPath.build();
 
@@ -226,7 +230,8 @@ public class UnifiedAutonomous extends LinearOpMode {
                         new ParallelAction(
                                 new SequentialAction(
                                         chamberToHumanPlayer,
-                                        intermediate
+                                        intermediate,
+                                        intermediate2
                                 ),
                                 robot.roadrunnerRaiseSpecimenSlideToHeight(0)
                         ),
