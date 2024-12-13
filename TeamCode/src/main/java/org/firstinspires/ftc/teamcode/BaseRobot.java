@@ -48,6 +48,7 @@ import java.util.List;
         - Allows differentiation
         - Photos in drive: 24-25 season/Programming/lightning mcqueen
 
+    TODO: Build web-tool that allows robot configuration i.e driver station (ftc-dash)
 
     TODO:
         - IF HATE SOMETHING WRITE IT DOWN TO FIX IT LATER

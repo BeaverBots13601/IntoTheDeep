@@ -63,7 +63,7 @@ public final class MecanumDrive {
         public double kA = 0.0000779;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 50; // std. 50
+        public double maxWheelVel = 60; // std. 50
         public double minProfileAccel = -30;
         public double maxProfileAccel = 50;
 
@@ -133,8 +133,6 @@ public final class MecanumDrive {
 
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        // TODO: reverse motor directions if needed
-        //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));

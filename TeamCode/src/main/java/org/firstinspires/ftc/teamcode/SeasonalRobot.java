@@ -20,7 +20,7 @@ public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx horizontalArmMotor;
     private final DcMotorEx specimenSlideMotor;
     private final Servo specimenClawServo;
-    private final Servo clawServo;
+    private final CRServo clawServo;
     private final CRServo rotationServo;
 
     // candidate to be moved to base robot
@@ -39,9 +39,10 @@ public class SeasonalRobot extends BaseRobot {
         //intakeServo.setPower(0); // remove potential floating state
         specimenSlideMotor = createDefaultMotor("specimenSlideMotor");
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        clawServo = setUpServo("clawServo");
+        clawServo = opmode.hardwareMap.get(CRServo.class, "clawServo");
+        clawServo.setDirection(DcMotorSimple.Direction.REVERSE);
         rotationServo = opmode.hardwareMap.get(CRServo.class, "rotationServo");
-        closeClawMachine();
+        //closeClawMachine();
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -276,12 +277,16 @@ public class SeasonalRobot extends BaseRobot {
         return LimiterState.NONE;
     }
 
-    public void openClawMachine(){
+    /*public void openClawMachine(){
         clawServo.setPosition(0.4);
     }
 
     public void closeClawMachine(){
-        clawServo.setPosition(0.56);
+        clawServo.setPosition(0.57);
+    }*/
+
+    public void setClawMachineGrabberRotation(double speed){
+        clawServo.setPower(speed);
     }
 
     public void setClawRotation(double speed){

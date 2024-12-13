@@ -166,6 +166,16 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 typedRobot.setClawRotation(0);
             }
 
+            if (currentGamepadOne.triangle || currentGamepadOne.circle) {
+                if (currentGamepadOne.triangle) {
+                    typedRobot.setClawMachineGrabberRotation(.25);
+                } else {
+                    typedRobot.setClawMachineGrabberRotation(-.25);
+                }
+            } else {
+                typedRobot.setClawMachineGrabberRotation(0);
+            }
+
             previousGamepadOne.copy(currentGamepadOne);
             previousGamepadTwo.copy(currentGamepadTwo);
             running = continued;
@@ -174,7 +184,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     }
 
     private boolean specimenClawOpen = true;
-    private boolean clawMachineOpen = false;
     private void updateButtons() {
         // put button actions here in this format
 
@@ -194,17 +203,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // After this, can use SeasonalRobot
         if (typedRobot == null) return;
-
-        // submersible grabber ctrls (gp 1)
-        if (currentGamepadOne.square && !previousGamepadOne.square) {
-            if (clawMachineOpen){
-                typedRobot.closeClawMachine();
-                clawMachineOpen = false;
-            } else {
-                typedRobot.openClawMachine();
-                clawMachineOpen = true;
-            }
-        }
 
         // wall specimen grabber ctrl (gp 2)
         if (currentGamepadTwo.square && !previousGamepadTwo.square) {
