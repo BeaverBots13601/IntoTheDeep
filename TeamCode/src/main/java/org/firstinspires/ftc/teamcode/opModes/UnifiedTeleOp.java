@@ -126,7 +126,8 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
             // horizontal arm (gp 1)
             robot.writeToTelemetry("Horizontal Arm Power", currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
-            typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
+            //typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
+            typedRobot.setClawMachineGrabberRotation(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger * .4);
 
             // vertical arm (gp 2)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
@@ -155,7 +156,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
             }
 
-            // rotation (gp1)
+            // claw (gp1)
             if (currentGamepadOne.left_bumper || currentGamepadOne.right_bumper) {
                 if (currentGamepadOne.right_bumper) {
                     typedRobot.setClawRotation(.25);
@@ -166,14 +167,15 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 typedRobot.setClawRotation(0);
             }
 
+            // horizontal arm (gp1)
             if (currentGamepadOne.triangle || currentGamepadOne.circle) {
                 if (currentGamepadOne.triangle) {
-                    typedRobot.setClawMachineGrabberRotation(.25);
+                    typedRobot.setHorizontalArmPower(.35);
                 } else {
-                    typedRobot.setClawMachineGrabberRotation(-.25);
+                    typedRobot.setHorizontalArmPower(-.35);
                 }
             } else {
-                typedRobot.setClawMachineGrabberRotation(0);
+                typedRobot.setHorizontalArmPower(0);
             }
 
             previousGamepadOne.copy(currentGamepadOne);

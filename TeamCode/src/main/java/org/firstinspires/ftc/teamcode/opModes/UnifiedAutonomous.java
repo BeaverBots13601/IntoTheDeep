@@ -144,23 +144,23 @@ public class UnifiedAutonomous extends LinearOpMode {
         Pose2d startPose = new Pose2d(24, -60, Math.PI / 2);
         roadrunnerDrive = new MecanumDrive(hardwareMap, startPose);
         TrajectoryActionBuilder toChamberPath = roadrunnerDrive.actionBuilder(startPose)
-                .splineToConstantHeading(new Vector2d(-2, -32), 0);
+                .strafeToConstantHeading(new Vector2d(-2, -32));
 
         Action toChamber = toChamberPath.build();
 
         TrajectoryActionBuilder intoChamberPath = toChamberPath.endTrajectory().fresh()
-                .splineToConstantHeading(new Vector2d(-2, -30.5), 0);
+                .strafeToConstantHeading(new Vector2d(-2, -30.5));
 
         Action intoChamber = intoChamberPath.build();
 
         TrajectoryActionBuilder chamberToHumanPlayerPath = intoChamberPath.endTrajectory().fresh()
-                .splineToConstantHeading(new Vector2d(-2, -35), 0)
-                .splineToConstantHeading(new Vector2d(35, -35), 0); // strafe
+                .strafeToConstantHeading(new Vector2d(-2, -35))
+                .strafeToConstantHeading(new Vector2d(35, -35)); // strafe
 
         Action chamberToHumanPlayer = chamberToHumanPlayerPath.build();
 
         TrajectoryActionBuilder intermediatePath = chamberToHumanPlayerPath.endTrajectory().fresh()
-                .splineToConstantHeading(new Vector2d(35, -8), 0);
+                .strafeToConstantHeading(new Vector2d(35, -8));
 
         Action intermediate = intermediatePath.build();
 
