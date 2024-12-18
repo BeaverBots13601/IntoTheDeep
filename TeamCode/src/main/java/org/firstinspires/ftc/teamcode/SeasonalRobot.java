@@ -44,7 +44,6 @@ public class SeasonalRobot extends BaseRobot {
         leftRotationServo = opmode.hardwareMap.get(CRServo.class, "rotationServo");
         leftRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
         rightRotationServo = opmode.hardwareMap.get(CRServo.class, "rightRotationServo");
-        openSpecimenClaw();
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.

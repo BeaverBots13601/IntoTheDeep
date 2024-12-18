@@ -46,6 +46,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         } else {
             robot = new SeasonalRobot(this);
             typedRobot = (SeasonalRobot) robot;
+            typedRobot.openSpecimenClaw();
         }
 
         updateSwitchState(robot.getSwitchState());
