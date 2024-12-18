@@ -20,8 +20,10 @@ public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx horizontalArmMotor;
     private final DcMotorEx specimenSlideMotor;
     private final Servo specimenClawServo;
-    private final CRServo clawServo;
-    private final CRServo rotationServo;
+    private final Servo specimenFlipServo;
+    private final Servo wristServo;
+    private final CRServo leftRotationServo;
+    private final CRServo rightRotationServo;
 
     // candidate to be moved to base robot
 
@@ -35,14 +37,14 @@ public class SeasonalRobot extends BaseRobot {
         horizontalArmMotor = createDefaultMotor("horizontalArmMotor");
         horizontalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         specimenClawServo = setUpServo("specimenClawServo");
-        //intakeServo = opmode.hardwareMap.get(CRServo.class, "intakeServo");
-        //intakeServo.setPower(0); // remove potential floating state
         specimenSlideMotor = createDefaultMotor("specimenSlideMotor");
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        clawServo = opmode.hardwareMap.get(CRServo.class, "clawServo");
-        clawServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        rotationServo = opmode.hardwareMap.get(CRServo.class, "rotationServo");
-        //closeClawMachine();
+        specimenFlipServo = setUpServo("specimenFlipServo");
+        wristServo = setUpServo("wristServo");
+        leftRotationServo = opmode.hardwareMap.get(CRServo.class, "rotationServo");
+        leftRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightRotationServo = opmode.hardwareMap.get(CRServo.class, "rightRotationServo");
+        openSpecimenClaw();
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -258,6 +260,10 @@ public class SeasonalRobot extends BaseRobot {
         specimenClawServo.setPosition(.2);
     }
 
+    public void specimenArmToPickup(){ specimenFlipServo.setPosition(0.5); }
+
+    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.7); }
+
     public enum LimiterState {
         // is this enum hell?
         HIGH,
@@ -277,19 +283,42 @@ public class SeasonalRobot extends BaseRobot {
         return LimiterState.NONE;
     }
 
-    /*public void openClawMachine(){
-        clawServo.setPosition(0.4);
+    public enum WristPosition {
+        // todo needs tuning
+        HIGH(0.75),
+        MID(0.5),
+        LOW(0.25);
+
+        private final double position;
+
+        public double getPosition(){ return position; }
+        
+        WristPosition(double pos){ this.position = pos; }
+    }
+    private WristPosition currentPos;
+    public void setWristPosition(WristPosition pos){
+        wristServo.setPosition(pos.getPosition());
+        currentPos = pos;
     }
 
-    public void closeClawMachine(){
-        clawServo.setPosition(0.57);
-    }*/
-
-    public void setClawMachineGrabberRotation(double speed){
-        clawServo.setPower(speed);
+    public WristPosition getWristPosition(){
+        return currentPos;
     }
 
-    public void setClawRotation(double speed){
-        rotationServo.setPower(speed);
+    private double intakeSpeed = 1;
+    public void reverseIntakeDirection(){
+        leftRotationServo.setPower(leftRotationServo.getPower() * -1);
+        rightRotationServo.setPower(rightRotationServo.getPower() * -1);
+        intakeSpeed *= -1;
+    }
+
+    public void toggleIntake(){
+        if(leftRotationServo.getPower() == 0){
+            leftRotationServo.setPower(intakeSpeed);
+            rightRotationServo.setPower(intakeSpeed);
+        } else {
+            leftRotationServo.setPower(0);
+            rightRotationServo.setPower(0);
+        }
     }
 }

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
+import org.firstinspires.ftc.teamcode.SeasonalRobot.WristPosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,8 +127,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
             // horizontal arm (gp 1)
             robot.writeToTelemetry("Horizontal Arm Power", currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
-            //typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
-            typedRobot.setClawMachineGrabberRotation(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger * .4);
+            typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
 
             // vertical arm (gp 2)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
@@ -156,28 +156,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
             }
 
-            // claw (gp1)
-            if (currentGamepadOne.left_bumper || currentGamepadOne.right_bumper) {
-                if (currentGamepadOne.right_bumper) {
-                    typedRobot.setClawRotation(.25);
-                } else {
-                    typedRobot.setClawRotation(-.25);
-                }
-            } else {
-                typedRobot.setClawRotation(0);
-            }
-
-            // horizontal arm (gp1)
-            if (currentGamepadOne.triangle || currentGamepadOne.circle) {
-                if (currentGamepadOne.triangle) {
-                    typedRobot.setHorizontalArmPower(.35);
-                } else {
-                    typedRobot.setHorizontalArmPower(-.35);
-                }
-            } else {
-                typedRobot.setHorizontalArmPower(0);
-            }
-
             previousGamepadOne.copy(currentGamepadOne);
             previousGamepadTwo.copy(currentGamepadTwo);
             running = continued;
@@ -185,7 +163,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
     }
 
-    private boolean specimenClawOpen = true;
+    private boolean specimenClawDown = true;
     private void updateButtons() {
         // put button actions here in this format
 
@@ -208,12 +186,14 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // wall specimen grabber ctrl (gp 2)
         if (currentGamepadTwo.square && !previousGamepadTwo.square) {
-            if (specimenClawOpen){
+            if (specimenClawDown){
                 typedRobot.closeSpecimenClaw();
-                specimenClawOpen = false;
+                typedRobot.specimenArmToHook();
+                specimenClawDown = false;
             } else {
                 typedRobot.openSpecimenClaw();
-                specimenClawOpen = true;
+                typedRobot.specimenArmToPickup();
+                specimenClawDown = true;
             }
         }
 
@@ -239,6 +219,31 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 gamepad2.rumble(300);
                 //if (!manualVerticalMode) typedRobot.raiseRearVerticalArmsToHeightAsync(0.5); // need to dial value
             }
+        }
+
+        // intake direction (gp1)
+        if (currentGamepadOne.x && !previousGamepadOne.x) {
+            typedRobot.reverseIntakeDirection();
+        }
+
+        // intake stop/start (gp1)
+        if (currentGamepadOne.square && !previousGamepadOne.square){
+            typedRobot.toggleIntake();
+        }
+
+        // wrist full up (gp1)
+        if (currentGamepadOne.circle && !previousGamepadOne.circle){
+            typedRobot.setWristPosition(WristPosition.HIGH);
+        }
+
+        // wrist down level (gp1)
+        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
+            WristPosition pos = typedRobot.getWristPosition();
+            if (pos == WristPosition.HIGH){
+                typedRobot.setWristPosition(WristPosition.MID);
+            } else if (pos == WristPosition.MID){
+                typedRobot.setWristPosition(WristPosition.LOW);
+            } // else do nothing; already low
         }
 
         // manual verticals (gp2)
