@@ -221,6 +221,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                         toChamber,
                         robot.roadrunnerRaiseSpecimenSlideToHeight(0.4),
                         new SequentialAction(
+                            new InstantAction(robot::closeSpecimenClaw),
                             new InstantAction(robot::specimenArmToHook),
                             new SleepAction(.3) // wait for movement
                         )

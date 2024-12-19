@@ -41,9 +41,11 @@ public class SeasonalRobot extends BaseRobot {
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         specimenFlipServo = setUpServo("specimenFlipServo");
         wristServo = setUpServo("wristServo");
-        leftRotationServo = opmode.hardwareMap.get(CRServo.class, "rotationServo");
-        leftRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRotationServo = opmode.hardwareMap.get(CRServo.class, "leftRotationServo");
         rightRotationServo = opmode.hardwareMap.get(CRServo.class, "rightRotationServo");
+        rightRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        closeSpecimenClaw();
+        specimenArmToHook();
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -252,16 +254,16 @@ public class SeasonalRobot extends BaseRobot {
     }
 
     public void closeSpecimenClaw(){
-        specimenClawServo.setPosition(.5);
+        specimenClawServo.setPosition(.52);
     }
 
     public void openSpecimenClaw(){
-        specimenClawServo.setPosition(.2);
+        specimenClawServo.setPosition(.23);
     }
 
-    public void specimenArmToPickup(){ specimenFlipServo.setPosition(0.5); }
+    public void specimenArmToPickup(){ specimenFlipServo.setPosition(0.21); }
 
-    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.7); }
+    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.77); }
 
     public enum LimiterState {
         // is this enum hell?
@@ -284,14 +286,14 @@ public class SeasonalRobot extends BaseRobot {
 
     public enum WristPosition {
         // todo needs tuning
-        HIGH(0.75),
+        HIGH(0.6),
         MID(0.5),
-        LOW(0.25);
+        LOW(0.27);
 
         private final double position;
 
         public double getPosition(){ return position; }
-        
+
         WristPosition(double pos){ this.position = pos; }
     }
     private WristPosition currentPos;

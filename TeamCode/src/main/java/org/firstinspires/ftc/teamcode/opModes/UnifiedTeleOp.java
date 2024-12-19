@@ -46,7 +46,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         } else {
             robot = new SeasonalRobot(this);
             typedRobot = (SeasonalRobot) robot;
-            typedRobot.openSpecimenClaw();
         }
 
         updateSwitchState(robot.getSwitchState());
@@ -171,7 +170,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
     }
 
-    private boolean specimenClawDown = true;
+    private boolean specimenClawDown = false;
     private void updateButtons() {
         // put button actions here in this format
 
@@ -196,10 +195,12 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         if (currentGamepadTwo.square && !previousGamepadTwo.square) {
             if (specimenClawDown){
                 typedRobot.closeSpecimenClaw();
+                sleep(50); // this is terrible and horrible and dont do it ever
                 typedRobot.specimenArmToHook();
                 specimenClawDown = false;
             } else {
                 typedRobot.openSpecimenClaw();
+                sleep(50);
                 typedRobot.specimenArmToPickup();
                 specimenClawDown = true;
             }
