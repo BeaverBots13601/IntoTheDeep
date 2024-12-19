@@ -126,9 +126,16 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 continue;
             }
 
+            typedRobot.writeToTelemetry("b", typedRobot.horizontalArmFarBoundary());
+
             // horizontal arm (gp 1)
-            robot.writeToTelemetry("Horizontal Arm Power", currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
-            typedRobot.setHorizontalArmPower(currentGamepadOne.right_trigger - currentGamepadOne.left_trigger);
+            double val = currentGamepadOne.right_trigger - currentGamepadOne.left_trigger;
+            robot.writeToTelemetry("Horizontal Arm Power", val);
+            if (!typedRobot.horizontalArmFarBoundary() || val < 0) {
+                typedRobot.setHorizontalArmPower(val);
+            } else {
+                typedRobot.setHorizontalArmPower(0);
+            }
 
             // vertical arm (gp 2)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;

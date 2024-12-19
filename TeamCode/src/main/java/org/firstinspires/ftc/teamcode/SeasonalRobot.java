@@ -320,4 +320,6 @@ public class SeasonalRobot extends BaseRobot {
             rightRotationServo.setPower(0);
         }
     }
+
+    public boolean horizontalArmFarBoundary() { return horizontalArmMotor.getCurrentPosition() > 2000; }
 }
