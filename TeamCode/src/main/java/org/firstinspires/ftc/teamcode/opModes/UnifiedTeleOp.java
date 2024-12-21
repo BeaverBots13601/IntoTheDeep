@@ -48,7 +48,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             typedRobot = (SeasonalRobot) robot;
         }
 
-        updateSwitchState(robot.getSwitchState());
+        //updateSwitchState(robot.getSwitchState()); temporarily removed
         double referenceAngle;
         if(constants.ROBOT_HEADING != 0){
             referenceAngle = constants.ROBOT_HEADING;
@@ -65,7 +65,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             currentGamepadOne.copy(gamepad1);
             currentGamepadTwo.copy(gamepad2);
             updateButtons();
-            updateSwitchState(robot.getSwitchState());
+            //updateSwitchState(robot.getSwitchState()); temporarily removed
             robot.writeToTelemetry("Current Orientation Mode", orientationMode);
             robot.writeToTelemetry("Slides In Manual Mode", manualVerticalMode);
 
@@ -232,7 +232,9 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // intake direction (gp1)
         if (currentGamepadOne.x && !previousGamepadOne.x) {
+            typedRobot.toggleIntake();
             typedRobot.reverseIntakeDirection();
+            typedRobot.toggleIntake();
         }
 
         // intake stop/start (gp1)
@@ -248,9 +250,9 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         // wrist down level (gp1)
         if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
             WristPosition pos = typedRobot.getWristPosition();
-            if (pos == WristPosition.HIGH){
+            if (pos == WristPosition.HIGH){/*
                 typedRobot.setWristPosition(WristPosition.MID);
-            } else if (pos == WristPosition.MID){
+            } else if (pos == WristPosition.MID){*/
                 typedRobot.setWristPosition(WristPosition.LOW);
             } // else do nothing; already low
         }

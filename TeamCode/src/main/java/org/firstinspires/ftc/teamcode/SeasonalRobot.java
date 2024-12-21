@@ -42,10 +42,14 @@ public class SeasonalRobot extends BaseRobot {
         specimenFlipServo = setUpServo("specimenFlipServo");
         wristServo = setUpServo("wristServo");
         leftRotationServo = opmode.hardwareMap.get(CRServo.class, "leftRotationServo");
+        leftRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRotationServo.setPower(0);
         rightRotationServo = opmode.hardwareMap.get(CRServo.class, "rightRotationServo");
-        rightRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        closeSpecimenClaw();
-        specimenArmToHook();
+        rightRotationServo.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightRotationServo.setPower(0);
+        openSpecimenClaw();
+        specimenArmToPickup();
+        setWristPosition(WristPosition.HIGH);
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -249,8 +253,7 @@ public class SeasonalRobot extends BaseRobot {
      */
     public void setHorizontalArmPower(double speed){
         // todo needs some way to set/limit distance
-        double limitedSpeed = Math.min(Math.max(speed, -0.70), 0.70);
-        horizontalArmMotor.setPower(limitedSpeed);
+        horizontalArmMotor.setPower(speed);
     }
 
     public void closeSpecimenClaw(){
@@ -261,9 +264,14 @@ public class SeasonalRobot extends BaseRobot {
         specimenClawServo.setPosition(.23);
     }
 
-    public void specimenArmToPickup(){ specimenFlipServo.setPosition(0.21); }
+    public void specimenArmToPickup(){ specimenFlipServo.setPosition(.17); } // usually .21
 
-    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.77); }
+    public void specimenArmToHook(){ specimenFlipServo.setPosition(.68); } // usually .77
+
+    // auto uses flipped positions
+    public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.5); }
+// todo tune me
+    public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.5); }
 
     public enum LimiterState {
         // is this enum hell?
@@ -306,18 +314,19 @@ public class SeasonalRobot extends BaseRobot {
         return currentPos;
     }
 
-    private double intakeSpeed = 1;
     public void reverseIntakeDirection(){
-        leftRotationServo.setPower(leftRotationServo.getPower() * -1);
-        rightRotationServo.setPower(rightRotationServo.getPower() * -1);
-        intakeSpeed *= -1;
+        toggleIntake();
+        savedPow *= -1;
+        toggleIntake();
     }
 
+    private double savedPow = 1;
     public void toggleIntake(){
         if(leftRotationServo.getPower() == 0){
-            leftRotationServo.setPower(intakeSpeed);
-            rightRotationServo.setPower(intakeSpeed);
+            leftRotationServo.setPower(savedPow);
+            rightRotationServo.setPower(savedPow);
         } else {
+            savedPow = leftRotationServo.getPower();
             leftRotationServo.setPower(0);
             rightRotationServo.setPower(0);
         }

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.opModes.UnifiedTeleOp;
 public class robotTeleOpOpmode extends UnifiedTeleOp {
     @Override
     public void runOpMode(){
-        this.orientationMode = DriveMode.ROBOT;
+        this.orientationMode = DriveMode.FIELD;
         this.configurationMode = RobotConfiguration.FULL;
         super.runOpMode();
     }

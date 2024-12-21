@@ -186,7 +186,7 @@ public class UnifiedAutonomous extends LinearOpMode {
             new SleepAction(0.25),
             new ParallelAction(
                 new SequentialAction(
-                    new InstantAction(robot::specimenArmToHook),
+                    new InstantAction(robot::specimenArmToHookAuto),
                     new SleepAction(.3)
                 ),
                 humanPlayerToChamber,
@@ -199,7 +199,7 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         ParallelAction resetForNextSpecimen = new ParallelAction(
             chamberToHumanPlayer,
-            new InstantAction(robot::specimenArmToPickup),
+            new InstantAction(robot::specimenArmToPickupAuto),
             robot.roadrunnerRaiseSpecimenSlideToHeight(0)
         );
 
@@ -222,7 +222,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                         robot.roadrunnerRaiseSpecimenSlideToHeight(0.4),
                         new SequentialAction(
                             new InstantAction(robot::closeSpecimenClaw),
-                            new InstantAction(robot::specimenArmToHook),
+                            new InstantAction(robot::specimenArmToHookAuto),
                             new SleepAction(.3) // wait for movement
                         )
                     ),
@@ -230,7 +230,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                     new InstantAction(robot::openSpecimenClaw),
                     new SleepAction(.25),
                     new ParallelAction(
-                        new InstantAction(robot::specimenArmToPickup),
+                        new InstantAction(robot::specimenArmToPickupAuto),
                         // time to go move samples
                         moveSamples, // this puts us at human player spot
                         robot.roadrunnerRaiseSpecimenSlideToHeight(0)
