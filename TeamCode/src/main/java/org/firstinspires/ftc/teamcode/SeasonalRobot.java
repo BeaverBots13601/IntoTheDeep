@@ -4,12 +4,16 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 // right-front (par0) & left-back (perp) are our drive motors for measuring (port 0 & 3 issue)
 // right-rear slide & specimen slide our precise motors (port 0 & 3 issue)
@@ -24,6 +28,7 @@ public class SeasonalRobot extends BaseRobot {
     private final Servo wristServo;
     private final CRServo leftRotationServo;
     private final CRServo rightRotationServo;
+    private final RevColorSensorV3 colorSensor;
 
     // candidate to be moved to base robot
 
@@ -47,9 +52,10 @@ public class SeasonalRobot extends BaseRobot {
         rightRotationServo = opmode.hardwareMap.get(CRServo.class, "rightRotationServo");
         rightRotationServo.setDirection(DcMotorSimple.Direction.FORWARD);
         rightRotationServo.setPower(0);
+        colorSensor = opmode.hardwareMap.get(RevColorSensorV3.class, "colorSensor");
         openSpecimenClaw();
         specimenArmToPickup();
-        setWristPosition(WristPosition.HIGH);
+        setWristPosition(WristPosition.LOW);
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
@@ -260,18 +266,16 @@ public class SeasonalRobot extends BaseRobot {
         specimenClawServo.setPosition(.52);
     }
 
-    public void openSpecimenClaw(){
-        specimenClawServo.setPosition(.23);
-    }
+    public void openSpecimenClaw(){ specimenClawServo.setPosition(.23); }
 
-    public void specimenArmToPickup(){ specimenFlipServo.setPosition(.17); } // usually .21
+    public void specimenArmToPickup(){ specimenFlipServo.setPosition(1); }
 
-    public void specimenArmToHook(){ specimenFlipServo.setPosition(.68); } // usually .77
+    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.21); }
 
     // auto uses flipped positions
-    public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.5); }
+    public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.67); }
 // todo tune me
-    public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.5); }
+    public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.35); }
 
     public enum LimiterState {
         // is this enum hell?
@@ -294,9 +298,9 @@ public class SeasonalRobot extends BaseRobot {
 
     public enum WristPosition {
         // todo needs tuning
-        HIGH(0.6),
+        HIGH(0.33),
         MID(0.5),
-        LOW(0.27);
+        LOW(1);
 
         private final double position;
 
@@ -320,7 +324,16 @@ public class SeasonalRobot extends BaseRobot {
         toggleIntake();
     }
 
-    private double savedPow = 1;
+    public void reverseIntake(){
+        leftRotationServo.setPower(1);
+        rightRotationServo.setPower(1);
+    }
+    public void forwardIntake(){
+        leftRotationServo.setPower(-1);
+        rightRotationServo.setPower(-1);
+    }
+
+    private volatile double savedPow = -1;
     public void toggleIntake(){
         if(leftRotationServo.getPower() == 0){
             leftRotationServo.setPower(savedPow);
@@ -331,6 +344,22 @@ public class SeasonalRobot extends BaseRobot {
             rightRotationServo.setPower(0);
         }
     }
+    public void startIntake(){
+        leftRotationServo.setPower(savedPow);
+        rightRotationServo.setPower(savedPow);
+    }
+    public void stopIntake(){
+        leftRotationServo.setPower(0);
+        rightRotationServo.setPower(0);
+    }
 
     public boolean horizontalArmFarBoundary() { return horizontalArmMotor.getCurrentPosition() > 2000; }
+
+    public double getColorSensorProximity(DistanceUnit unit){
+        return colorSensor.getDistance(unit);
+    }
+
+    public NormalizedRGBA getColorSensorColor(){
+        return colorSensor.getNormalizedColors();
+    }
 }
