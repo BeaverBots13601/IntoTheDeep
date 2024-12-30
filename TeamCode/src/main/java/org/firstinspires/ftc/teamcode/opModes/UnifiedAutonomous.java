@@ -144,7 +144,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Pose2d startPose = new Pose2d(24, -60, -Math.PI / 2);
         roadrunnerDrive = new MecanumDrive(hardwareMap, startPose);
         TrajectoryActionBuilder toChamberPath = roadrunnerDrive.actionBuilder(startPose)
-            .strafeTo(new Vector2d(-2, -30.5));
+            .strafeTo(new Vector2d(-6, -31.5));
 
         Action toChamber = toChamberPath.build();
 
@@ -155,33 +155,63 @@ public class UnifiedAutonomous extends LinearOpMode {
             .strafeTo(new Vector2d(45, -12)) // first sample
             .strafeTo(new Vector2d(45, -54)) // push
             .strafeTo(new Vector2d(45, -12)) // back up
-            .strafeTo(new Vector2d(49, -12)) // second sample
-            .strafeTo(new Vector2d(49, -54)) // push
-            .strafeTo(new Vector2d(49, -12)) // back up
-            .strafeTo(new Vector2d(53, -12)) // third sample
-            .strafeTo(new Vector2d(53, -54)) // push
-            .strafeTo(new Vector2d(45, -30)) // back up
-            .strafeTo(new Vector2d(45, -58.5)); // get sample
+            .strafeTo(new Vector2d(55, -12)) // second sample
+            .strafeTo(new Vector2d(55, -54)) // push
+            .strafeTo(new Vector2d(55, -12)) // back up
+            .strafeTo(new Vector2d(63, -12)) // third sample
+            .strafeTo(new Vector2d(63, -54)) // push
+            .strafeTo(new Vector2d(45, -30)); // back up
 
         Action moveSamples = retrieveSamplesPath.build();
 
-        TrajectoryActionBuilder humanPlayerToChamberPath = retrieveSamplesPath.endTrajectory().fresh()
-            .strafeTo(new Vector2d(0, -30));
+        TrajectoryActionBuilder moveSamples2Path = retrieveSamplesPath.endTrajectory().fresh()
+            .strafeTo(new Vector2d(45, -51)); // get sample
 
-        Action humanPlayerToChamber = humanPlayerToChamberPath.build();
+        Action moveSamples2 = moveSamples2Path.build();
 
-        TrajectoryActionBuilder chamberToHumanPlayerPath = humanPlayerToChamberPath.endTrajectory().fresh()
-            .strafeTo(new Vector2d(45, -58.5));
+        TrajectoryActionBuilder humanPlayerToChamberPath1 = moveSamples2Path.endTrajectory().fresh()
+            .strafeTo(new Vector2d(-3, -32.5));
 
-        Action chamberToHumanPlayer = chamberToHumanPlayerPath.build();
+        Action humanPlayerToChamber1 = humanPlayerToChamberPath1.build();
 
-        TrajectoryActionBuilder inChamberToParkPath = humanPlayerToChamberPath.endTrajectory().fresh()
+        TrajectoryActionBuilder chamberToHumanPlayerPath1 = humanPlayerToChamberPath1.endTrajectory().fresh()
+            .strafeTo(new Vector2d(45, -51));
+
+        Action chamberToHumanPlayer1 = chamberToHumanPlayerPath1.build();
+
+        TrajectoryActionBuilder humanPlayerToChamberPath2 = chamberToHumanPlayerPath1.endTrajectory().fresh()
+                .strafeTo(new Vector2d(0, -32.5));
+
+        Action humanPlayerToChamber2 = humanPlayerToChamberPath2.build();
+
+        TrajectoryActionBuilder chamberToHumanPlayerPath2 = humanPlayerToChamberPath2.endTrajectory().fresh()
+                .strafeTo(new Vector2d(45, -51));
+
+        Action chamberToHumanPlayer2 = chamberToHumanPlayerPath2.build();
+
+        TrajectoryActionBuilder humanPlayerToChamberPath3 = chamberToHumanPlayerPath2.endTrajectory().fresh()
+                .strafeTo(new Vector2d(3, -32.5));
+
+        Action humanPlayerToChamber3 = humanPlayerToChamberPath3.build();
+
+        TrajectoryActionBuilder chamberToHumanPlayerPath3 = humanPlayerToChamberPath3.endTrajectory().fresh()
+                .strafeTo(new Vector2d(45, -51));
+
+        Action chamberToHumanPlayer3 = chamberToHumanPlayerPath3.build();
+
+        TrajectoryActionBuilder humanPlayerToChamberPath4 = chamberToHumanPlayerPath3.endTrajectory().fresh()
+                .strafeTo(new Vector2d(6, -32.5));
+
+        Action humanPlayerToChamber4 = humanPlayerToChamberPath4.build();
+
+        TrajectoryActionBuilder inChamberToParkPath = humanPlayerToChamberPath4.endTrajectory().fresh()
             .strafeToConstantHeading(new Vector2d(60, -60));
 
         Action inChamberToPark = inChamberToParkPath.build();
 
         // assumes starting at human player. ends at the chamber
-        SequentialAction clipSpecimen = new SequentialAction(
+        // JAVA SUCKSSSS. must be like this because of non-reusability (Function requires a lot of scoping work)
+        SequentialAction clipSpecimen1 = new SequentialAction(
             new InstantAction(robot::closeSpecimenClaw),
             new SleepAction(0.25),
             new ParallelAction(
@@ -189,24 +219,94 @@ public class UnifiedAutonomous extends LinearOpMode {
                     new InstantAction(robot::specimenArmToHookAuto),
                     new SleepAction(.3)
                 ),
-                humanPlayerToChamber,
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.4)
+                humanPlayerToChamber1,
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
             ),
-            robot.roadrunnerRaiseSpecimenSlideToHeight(0.55),
+            new SleepAction(.25),
+            robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+            new SleepAction(.5),
             new InstantAction(robot::openSpecimenClaw),
             new SleepAction(.25)
         );
 
-        ParallelAction resetForNextSpecimen = new ParallelAction(
-            chamberToHumanPlayer,
-            new InstantAction(robot::specimenArmToPickupAuto),
-            robot.roadrunnerRaiseSpecimenSlideToHeight(0)
+        SequentialAction clipSpecimen2 = new SequentialAction(
+                new InstantAction(robot::closeSpecimenClaw),
+                new SleepAction(0.25),
+                new ParallelAction(
+                        new SequentialAction(
+                                new InstantAction(robot::specimenArmToHookAuto),
+                                new SleepAction(.3)
+                        ),
+                        humanPlayerToChamber2,
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
+                ),
+                new SleepAction(.25),
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                new SleepAction(.5),
+                new InstantAction(robot::openSpecimenClaw),
+                new SleepAction(.25)
+        );
+
+        SequentialAction clipSpecimen3 = new SequentialAction(
+                new InstantAction(robot::closeSpecimenClaw),
+                new SleepAction(0.25),
+                new ParallelAction(
+                        new SequentialAction(
+                                new InstantAction(robot::specimenArmToHookAuto),
+                                new SleepAction(.3)
+                        ),
+                        humanPlayerToChamber3,
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
+                ),
+                new SleepAction(.25),
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                new SleepAction(.5),
+                new InstantAction(robot::openSpecimenClaw),
+                new SleepAction(.25)
+        );
+
+        SequentialAction clipSpecimen4 = new SequentialAction(
+                new InstantAction(robot::closeSpecimenClaw),
+                new SleepAction(0.25),
+                new ParallelAction(
+                        new SequentialAction(
+                                new InstantAction(robot::specimenArmToHookAuto),
+                                new SleepAction(.3)
+                        ),
+                        humanPlayerToChamber4,
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
+                ),
+                new SleepAction(.25),
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                new SleepAction(.5),
+                new InstantAction(robot::openSpecimenClaw),
+                new SleepAction(.25)
+        );
+
+        ParallelAction resetForNextSpecimen1 = new ParallelAction(
+            chamberToHumanPlayer1,
+            robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+            new InstantAction(robot::specimenArmToPickupAuto)
+        );
+
+        ParallelAction resetForNextSpecimen2 = new ParallelAction(
+                chamberToHumanPlayer2,
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+                new InstantAction(robot::specimenArmToPickupAuto)
+        );
+
+        ParallelAction resetForNextSpecimen3 = new ParallelAction(
+                chamberToHumanPlayer3,
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+                new InstantAction(robot::specimenArmToPickupAuto)
         );
 
         robot.writeToTelemetry("INIT STATUS", "READY");
         robot.updateTelemetry();
 
         waitForStart(); // setup done actually do things
+
+        robot.setWristPosition(SeasonalRobot.WristPosition.HIGH);
 
         switch(currentLocation){
             case RedFar:
@@ -219,32 +319,45 @@ public class UnifiedAutonomous extends LinearOpMode {
                 Actions.runBlocking(new SequentialAction(
                     new ParallelAction(
                         toChamber,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.4),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35),
                         new SequentialAction(
                             new InstantAction(robot::closeSpecimenClaw),
                             new InstantAction(robot::specimenArmToHookAuto),
                             new SleepAction(.3) // wait for movement
                         )
                     ),
-                    robot.roadrunnerRaiseSpecimenSlideToHeight(0.55),
+                    robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                    new SleepAction(.5),
+                    new InstantAction(robot::specimenArmToPickupAuto),
                     new InstantAction(robot::openSpecimenClaw),
                     new SleepAction(.25),
                     new ParallelAction(
-                        new InstantAction(robot::specimenArmToPickupAuto),
                         // time to go move samples
-                        moveSamples, // this puts us at human player spot
+                        new SequentialAction(
+                            new InstantAction(robot::specimenArmToHookAuto),
+                            moveSamples,
+                            new InstantAction(robot::specimenArmToPickupAuto),
+                            moveSamples2
+                        ), // this puts us at human player spot
                         robot.roadrunnerRaiseSpecimenSlideToHeight(0)
                     ),
                     // do specimens
-                    clipSpecimen,
-                    resetForNextSpecimen,
-                    clipSpecimen,
-                    resetForNextSpecimen,
-                    clipSpecimen,
-                    resetForNextSpecimen,
-                    clipSpecimen,
+                    clipSpecimen1,
+                    resetForNextSpecimen1,
+                    clipSpecimen2,
+                    resetForNextSpecimen2,
+                    clipSpecimen3,
+                    resetForNextSpecimen3,
+                    clipSpecimen4,
                     // park
-                    inChamberToPark
+                    new ParallelAction(
+                        inChamberToPark,
+                        new SequentialAction(
+                            robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+                            new InstantAction(robot::specimenArmToHookAuto),
+                            new SleepAction(0.3)
+                        )
+                    )
                 ));
                 // put our current heading in constants for field teleopmodes to read later
                 // todo THIS WONT WORK what if auto dies early?

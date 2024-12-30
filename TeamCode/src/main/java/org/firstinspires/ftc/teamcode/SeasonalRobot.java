@@ -273,9 +273,9 @@ public class SeasonalRobot extends BaseRobot {
     public void specimenArmToHook(){ specimenFlipServo.setPosition(0.21); }
 
     // auto uses flipped positions
-    public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.67); }
+    public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.21); }
 // todo tune me
-    public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.35); }
+    public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.97); }
 
     public enum LimiterState {
         // is this enum hell?
