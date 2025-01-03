@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 
 // right-front (par0) & left-back (perp) are our drive motors for measuring (port 0 & 3 issue)
 // right-rear slide & specimen slide our precise motors (port 0 & 3 issue)
@@ -77,16 +78,8 @@ public class SeasonalRobot extends BaseRobot {
 //        toggleIntake();
 //    }
 
-    public void raiseRearVerticalArmsToHeight(double height){
-        raiseRearVerticalsToHeightInternal(height, false);
-    }
-
-    public void raiseRearVerticalArmsToHeightAsync(double height){
-        raiseRearVerticalsToHeightInternal(height, true);
-    }
-
-    public Action roadrunnerMoveRearVerticalSlidesToHeight(double height){
-        return new Action() {
+    public InterruptableAction roadrunnerMoveRearVerticalSlidesToHeight(double height){
+        return new InterruptableAction() {
             private boolean initialized = false;
             private DcMotor.RunMode before;
             @Override
@@ -109,7 +102,7 @@ public class SeasonalRobot extends BaseRobot {
                 telemetryPacket.put("Motor At", leftRearVerticalArmMotor.getCurrentPosition());
                 telemetryPacket.put("Motor Moving To", leftRearVerticalArmMotor.getTargetPosition());
 
-                if(leftRearVerticalArmMotor.isBusy()) return true;
+                if(leftRearVerticalArmMotor.isBusy() && !interrupted) return true;
 
                 leftRearVerticalArmMotor.setPower(0);
                 rightRearVerticalArmMotor.setPower(0);
@@ -119,55 +112,15 @@ public class SeasonalRobot extends BaseRobot {
 
                 return false;
             }
+            private boolean interrupted = false;
+            public void interrupt(){
+                interrupted = true;
+                run(new TelemetryPacket());
+            }
         };
     }
 
-    private Thread currentAction = null;
-    private void raiseRearVerticalsToHeightInternal(double height, boolean async){
-        if(async && currentAction != null && currentAction.isAlive()){
-            currentAction.interrupt(); // interrupt current movement if running
-        }
-
-        currentAction = new Thread(() -> {
-            DcMotor.RunMode before = leftRearVerticalArmMotor.getMode();
-
-            rightRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
-            leftRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
-
-            leftRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            leftRearVerticalArmMotor.setPower(0.40); // human-controlled uses 70%, see about boosting
-            rightRearVerticalArmMotor.setPower(0.40);
-
-            while (rightRearVerticalArmMotor.isBusy() && opMode.opModeIsActive() && !Thread.currentThread().isInterrupted());
-
-            leftRearVerticalArmMotor.setPower(0);
-            rightRearVerticalArmMotor.setPower(0);
-
-            leftRearVerticalArmMotor.setMode(before);
-            rightRearVerticalArmMotor.setMode(before);
-        });
-
-        if(async) { currentAction.start(); return; }
-        currentAction.run();
-    }
-
-    public void interruptCurrentRearSlideTask(){
-        if(currentAction != null && currentAction.isAlive()){
-            currentAction.interrupt(); // interrupt current movement if running
-        }
-    }
-
-    /**
-     * Move the specimen (front) slide to a specific height, expressed as a fraction of total height.
-     * @param height The height to move to, [0, 1]
-     */
-    public void raiseSpecimenSlideToHeight(double height){
-        raiseSpecimenSlideToHeightInternal(height, false);
-    }
-
-    public Action roadrunnerRaiseSpecimenSlideToHeight(double height){
+    public Action roadrunnerRaiseSpecimenSlideToHeightBugged(double height){
         return new Action() {
             private boolean initialized = false;
             private DcMotor.RunMode before;
@@ -201,39 +154,41 @@ public class SeasonalRobot extends BaseRobot {
         };
     }
 
-    /**
-     * Move the specimen (front) slide to a specific height, expressed as a fraction of total height.
-     * Asynchronous, will not halt execution of main loop.
-     * @param height The height to move to, [0, 1]
-     */
-    public void raiseSpecimenSlideToHeightAsync(double height){
-        raiseSpecimenSlideToHeightInternal(height, true);
-    }
+    public InterruptableAction roadrunnerRaiseSpecimenSlideToHeight(double height){
+        return new InterruptableAction() {
+            private boolean initialized = false;
+            private DcMotor.RunMode before;
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (!initialized){
+                    before = specimenSlideMotor.getMode();
 
-    private Thread currentSpecimenSlideAction = null;
-    private void raiseSpecimenSlideToHeightInternal(double height, boolean async){
-        if(async && currentSpecimenSlideAction != null && currentSpecimenSlideAction.isAlive()){
-            currentSpecimenSlideAction.interrupt(); // interrupt current movement if running
-        }
+                    specimenSlideMotor.setTargetPosition((int) (constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * height));
 
-        currentSpecimenSlideAction = new Thread(() -> {
-            DcMotor.RunMode before = specimenSlideMotor.getMode();
+                    specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            specimenSlideMotor.setTargetPosition((int) (constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * height));
+                    specimenSlideMotor.setPower(1);
 
-            specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    initialized = true;
+                }
 
-            specimenSlideMotor.setPower(1);
+                telemetryPacket.put("Motor At", specimenSlideMotor.getCurrentPosition());
+                telemetryPacket.put("Motor Moving To", specimenSlideMotor.getTargetPosition());
 
-            while (specimenSlideMotor.isBusy() && opMode.opModeIsActive() && !Thread.currentThread().isInterrupted());
+                if(specimenSlideMotor.isBusy() && !interrupted) return true;
 
-            specimenSlideMotor.setPower(0);
+                specimenSlideMotor.setPower(0);
 
-            specimenSlideMotor.setMode(before);
-        });
+                specimenSlideMotor.setMode(before);
 
-        if(async) { currentSpecimenSlideAction.start(); return; }
-        currentSpecimenSlideAction.run();
+                return false;
+            }
+            private boolean interrupted = false;
+            public void interrupt(){
+                interrupted = false;
+                run(new TelemetryPacket());
+            }
+        };
     }
 
     public Action roadrunnerExtendHorizontalSlideToLength(double dist){
@@ -269,12 +224,6 @@ public class SeasonalRobot extends BaseRobot {
         };
     }
 
-    public void interruptCurrentSpecimenSlideTask(){
-        if(currentSpecimenSlideAction != null && currentSpecimenSlideAction.isAlive()){
-            currentSpecimenSlideAction.interrupt(); // interrupt current movement if running
-        }
-    }
-
     public double getSpecimenSlideHeight(){
         return (double) specimenSlideMotor.getCurrentPosition() / constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS;
     }
@@ -287,6 +236,16 @@ public class SeasonalRobot extends BaseRobot {
 
     public void setSpecimenSlidePower(double speed){
         specimenSlideMotor.setPower(speed);
+    }
+
+    public void setSpecimenSlideMode(DcMotor.RunMode mode){
+        specimenSlideMotor.setMode(mode);
+    }
+
+    public void setSpecimenSlideTargetPos(int target){ specimenSlideMotor.setTargetPosition(target); }
+
+    public int getSpecimenSlidePos(){
+        return specimenSlideMotor.getCurrentPosition();
     }
 
     /**
@@ -304,14 +263,12 @@ public class SeasonalRobot extends BaseRobot {
     public void openSpecimenClaw(){ specimenClawServo.setPosition(.23); }
 
     public void specimenArmToPickup(){ specimenFlipServo.setPosition(1); }
-
     public void specimenArmToHook(){ specimenFlipServo.setPosition(0.21); }
+    public void specimenArmToHang(){ specimenFlipServo.setPosition(.73); }
 
     // auto uses flipped positions
     public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.21); }
-// todo tune me
     public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.97); }
-    public void specimenArmToHang(){ specimenFlipServo.setPosition(.73); }
 
     public enum LimiterState {
         // is this enum hell?
@@ -359,6 +316,7 @@ public class SeasonalRobot extends BaseRobot {
         leftRotationServo.setPower(1);
         rightRotationServo.setPower(1);
     }
+
     public void forwardIntake(){
         leftRotationServo.setPower(-1);
         rightRotationServo.setPower(-1);
@@ -377,19 +335,5 @@ public class SeasonalRobot extends BaseRobot {
 
     public NormalizedRGBA getColorSensorColor(){
         return colorSensor.getNormalizedColors();
-    }
-
-
-    private DcMotor.RunMode oldMode = DcMotor.RunMode.RUN_USING_ENCODER;
-    public void lockSpecimenSlideHeight(){
-        oldMode = specimenSlideMotor.getMode();
-        specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        specimenSlideMotor.setTargetPosition(specimenSlideMotor.getCurrentPosition());
-        specimenSlideMotor.setPower(1);
-    }
-
-    public void unlockSpecimenSlideHeight(){
-        specimenSlideMotor.setMode(oldMode);
-        specimenSlideMotor.setPower(0);
     }
 }

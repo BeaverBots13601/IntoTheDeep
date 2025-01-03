@@ -14,14 +14,15 @@ import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.WristPosition;
+import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class UnifiedTeleOp extends LinearOpMode {
     /** This field may be immediately changed by the switch state update. */
-    protected DriveMode orientationMode = DriveMode.ROBOT;
-    protected RobotConfiguration configurationMode = RobotConfiguration.RESTRICTED;
+    protected DriveMode orientationMode = DriveMode.ROBOT; // override me
+    protected RobotConfiguration configurationMode = RobotConfiguration.RESTRICTED; // override me
     protected TeamColor teamColor = TeamColor.BLUE; // override me
     protected boolean allowBaskets = false; // override me
     private SeasonalRobot typedRobot;
@@ -53,7 +54,9 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     }
 
     private List<Action> running = new ArrayList<>();
-    private Action runningSpecimenSlideAction = null;
+    private InterruptableAction runningSpecimenSlideAction = null;
+    // class instead of primitive to allow nullability
+    private Integer holdingSpecimenSlidePos = null;
     // we use multiple results to reduce false negatives. 3 works well
     private final int numResultsToUse = 3;
     private List<ColorResult> lastResultsArr = new ArrayList<>(numResultsToUse);
@@ -128,6 +131,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
             robot.setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+            // we can leave this in base robot because checks occur when adding actions
             List<Action> continued = new ArrayList<>();
             for(Action action : running){
                 if(action.run(new TelemetryPacket())) continued.add(action);
@@ -156,17 +160,43 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             robot.writeToTelemetry("Horizontal Arm Power", val);
             typedRobot.setHorizontalArmPower(val);
 
-//            if (runningSpecimenSlideAction == null){
-//                if (manualVerticalMode)
-//            } else {
-//                if(!runningSpecimenSlideAction.run(new TelemetryPacket())) runningSpecimenSlideAction = null;
-//                runningSpecimenSlideAction.
-//            }
-
             // vertical arm (gp 2)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
             robot.writeToTelemetry("Vertical Arm Power", a);
 
+            // specimen slide ctrl (gp2)
+            if (runningSpecimenSlideAction == null){
+                // either in manual or need to hold our height
+                if (manualVerticalMode){
+                    // allow manual controls
+                    if (!ascentMode){
+                        //LimiterState lim = typedRobot.getSpecimenSlideLimiterState();
+                        LimiterState lim = LimiterState.NONE;
+                        robot.writeToTelemetry("Limiter State", lim);
+                        //if(a == 0) a = 0.005f;
+                        typedRobot.setSpecimenSlideMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        if(lim == LimiterState.LOW) typedRobot.setSpecimenSlidePower(Math.max(0, a));
+                        if(lim == LimiterState.HIGH) typedRobot.setSpecimenSlidePower(Math.min(0, a));
+                        if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
+                    }
+                } else {
+                    if (holdingSpecimenSlidePos != null){
+                        // hold height
+                        typedRobot.setSpecimenSlideTargetPos(holdingSpecimenSlidePos);
+                        typedRobot.setSpecimenSlidePower(1);
+                        typedRobot.setSpecimenSlideMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    } else {
+                        typedRobot.setSpecimenSlidePower(0);
+                    }
+                }
+            } else {
+                // run action. clear if done
+                if(!runningSpecimenSlideAction.run(new TelemetryPacket())) runningSpecimenSlideAction = null;
+                // save our height to keep at
+                holdingSpecimenSlidePos = typedRobot.getSpecimenSlidePos();
+            }
+
+            // rear slide ctrl (gp2)
             // These limiters are prone to drift maybe? Depends how precise motors are. Investigate
             // If drivers report issues, look into making a reset button.
             if (manualVerticalMode && ascentMode) {
@@ -178,16 +208,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 // at upper limit: only allow negative speeds
                 if(lim == LimiterState.HIGH) typedRobot.setRearVerticalArmPower(Math.min(0, a));
                 if(lim == LimiterState.NONE) typedRobot.setRearVerticalArmPower(a);
-            }
-
-            if (manualVerticalMode && !ascentMode) {
-                //LimiterState lim = typedRobot.getSpecimenSlideLimiterState();
-                LimiterState lim = LimiterState.NONE;
-                robot.writeToTelemetry("Limiter State", lim);
-                //if(a == 0) a = 0.005f;
-                if(lim == LimiterState.LOW) typedRobot.setSpecimenSlidePower(Math.max(0, a));
-                if(lim == LimiterState.HIGH) typedRobot.setSpecimenSlidePower(Math.min(0, a));
-                if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
             }
 
             ColorResult lastResult = processColorSensorResult(typedRobot.getColorSensorColor());
@@ -276,7 +296,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         // After this, can use SeasonalRobot
         if (typedRobot == null) return;
 
-        // wall specimen grabber ctrl (gp 2)
+        // wall specimen grabber ctrl back (gp 2)
         if (currentGamepadTwo.square && !previousGamepadTwo.square) {
             if (specimenClawDown){
                 typedRobot.closeSpecimenClaw();
@@ -285,6 +305,21 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 specimenClawDown = false;
             } else {
                 typedRobot.specimenArmToPickup();
+                sleep(100);
+                typedRobot.openSpecimenClaw();
+                specimenClawDown = true;
+            }
+        }
+
+        // wall specimen grabber ctrl front (gp 2)
+        if (currentGamepadTwo.circle && !previousGamepadTwo.circle) {
+            if (specimenClawDown){
+                typedRobot.closeSpecimenClaw();
+                sleep(100); // this is unorthodox, but it stops drivers leaving before closed
+                typedRobot.specimenArmToHookAuto();
+                specimenClawDown = false;
+            } else {
+                typedRobot.specimenArmToPickupAuto();
                 sleep(100);
                 typedRobot.openSpecimenClaw();
                 specimenClawDown = true;
@@ -340,37 +375,40 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             }
         }
 
-        // manual verticals (gp2)
-        if (currentGamepadTwo.dpad_right && !previousGamepadTwo.dpad_right){
+        // toggle manual verticals (gp2)
+        if (currentGamepadTwo.dpad_left && !previousGamepadTwo.dpad_left){
             manualVerticalMode = !manualVerticalMode;
             if (manualVerticalMode){
                 // reset powers to 0 to avoid state where slides are stuck at power lvl
-                typedRobot.interruptCurrentSpecimenSlideTask();
-                typedRobot.interruptCurrentRearSlideTask();
                 typedRobot.setRearVerticalArmPower(0);
                 typedRobot.setSpecimenSlidePower(0);
+                if(runningSpecimenSlideAction != null) {
+                    runningSpecimenSlideAction.interrupt();
+                }
+                runningSpecimenSlideAction = null;
+                holdingSpecimenSlidePos = null;
             }
         }
 
-        // Preset height controls (gp2) (automatic)
-        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_up && !previousGamepadTwo.dpad_up){
-            typedRobot.interruptCurrentSpecimenSlideTask();
-            typedRobot.raiseSpecimenSlideToHeightAsync(0.7); // high chamber
-        }
-        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_left && !previousGamepadTwo.dpad_left){
-            typedRobot.interruptCurrentSpecimenSlideTask();
-            typedRobot.raiseSpecimenSlideToHeightAsync(0.3); // low chamber
-        }
-        if (currentGamepadTwo.dpad_down && !previousGamepadTwo.dpad_down){
-            typedRobot.interruptCurrentSpecimenSlideTask();
+        // down (gp 2)
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_down && !previousGamepadTwo.dpad_down){
+            if(runningSpecimenSlideAction != null) runningSpecimenSlideAction.interrupt();
+            runningSpecimenSlideAction = typedRobot.roadrunnerRaiseSpecimenSlideToHeight(0);
             // Don't require automatic/slide mode to allow post-ascent mode lowering
-            typedRobot.raiseSpecimenSlideToHeightAsync(0); // ground
         }
 
-        // Clip specimen to chamber (gp2) (automatic)
-        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.x && !previousGamepadTwo.x){
-            typedRobot.interruptCurrentSpecimenSlideTask();
-            typedRobot.raiseSpecimenSlideToHeightAsync(Math.max(typedRobot.getSpecimenSlideHeight() - 0.2, 0)); // decrease height
+        // clipped (gp 2)
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_up && !previousGamepadTwo.dpad_up){
+            if(runningSpecimenSlideAction != null) runningSpecimenSlideAction.interrupt();
+            runningSpecimenSlideAction = typedRobot.roadrunnerRaiseSpecimenSlideToHeight(0.75);
+            // Don't require automatic/slide mode to allow post-ascent mode lowering
+        }
+
+        // pre-clip (gp 2)
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_right && !previousGamepadTwo.dpad_right){
+            if(runningSpecimenSlideAction != null) runningSpecimenSlideAction.interrupt();
+            runningSpecimenSlideAction = typedRobot.roadrunnerRaiseSpecimenSlideToHeight(0.5);
+            // Don't require automatic/slide mode to allow post-ascent mode lowering
         }
     }
 
