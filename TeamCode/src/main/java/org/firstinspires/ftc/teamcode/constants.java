@@ -60,4 +60,5 @@ public class constants {
 
     public static final int CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS = 4000;
     public static final int CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS = 2200;
+    public static final int CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS = 1950;
 }

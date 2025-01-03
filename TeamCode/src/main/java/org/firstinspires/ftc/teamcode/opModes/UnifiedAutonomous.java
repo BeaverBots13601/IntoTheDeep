@@ -141,70 +141,81 @@ public class UnifiedAutonomous extends LinearOpMode {
             }*/
         }
 
+        robot.setWristPosition(SeasonalRobot.WristPosition.INIT);
+
         Pose2d startPose = new Pose2d(24, -60, -Math.PI / 2);
         roadrunnerDrive = new MecanumDrive(hardwareMap, startPose);
         TrajectoryActionBuilder toChamberPath = roadrunnerDrive.actionBuilder(startPose)
-            .strafeTo(new Vector2d(-6, -31.5));
+            .strafeTo(new Vector2d(-6, -30.5));
 
         Action toChamber = toChamberPath.build();
 
-        TrajectoryActionBuilder retrieveSamplesPath = toChamberPath.endTrajectory().fresh()
+        TrajectoryActionBuilder retrieveSample1Path = toChamberPath.endTrajectory().fresh()
             .strafeTo(new Vector2d(-2, -35))
-            .strafeTo(new Vector2d(35, -35)) // strafe
-            .strafeTo(new Vector2d(35, -8))
-            .strafeTo(new Vector2d(45, -12)) // first sample
-            .strafeTo(new Vector2d(45, -54)) // push
+            .strafeTo(new Vector2d(32, -35)) // strafe
+            .strafeTo(new Vector2d(45, -10)) // first sample
+            .strafeTo(new Vector2d(45, -54)); // push
+
+        Action moveSample1 = retrieveSample1Path.build();
+
+        TrajectoryActionBuilder retrieveSample2Path = retrieveSample1Path.endTrajectory().fresh()
             .strafeTo(new Vector2d(45, -12)) // back up
-            .strafeTo(new Vector2d(55, -12)) // second sample
-            .strafeTo(new Vector2d(55, -54)) // push
+            .strafeTo(new Vector2d(55, -12)); // second sample
+
+        Action moveSample2 = retrieveSample2Path.build();
+
+        TrajectoryActionBuilder retrieveSample2Pt2Path = retrieveSample2Path.endTrajectory().fresh()
+            .strafeTo(new Vector2d(55, -54)); // push
+
+        Action moveSample2Pt2 = retrieveSample2Pt2Path.build();
+
+        TrajectoryActionBuilder retrieveSample3Path = retrieveSample2Path.endTrajectory().fresh()
             .strafeTo(new Vector2d(55, -12)) // back up
-            .strafeTo(new Vector2d(63, -12)) // third sample
-            .strafeTo(new Vector2d(63, -54)) // push
-            .strafeTo(new Vector2d(45, -30)); // back up
+            .strafeTo(new Vector2d(63, -12)); // third sample
 
-        Action moveSamples = retrieveSamplesPath.build();
+        Action moveSample3 = retrieveSample3Path.build();
 
-        TrajectoryActionBuilder moveSamples2Path = retrieveSamplesPath.endTrajectory().fresh()
-            .strafeTo(new Vector2d(45, -51)); // get sample
+        TrajectoryActionBuilder moveSample3Pt2Path = retrieveSample3Path.endTrajectory().fresh()
+            .strafeTo(new Vector2d(63, -54)); // get sample
 
-        Action moveSamples2 = moveSamples2Path.build();
+        Action moveSample3Pt2 = moveSample3Pt2Path.build();
 
-        TrajectoryActionBuilder humanPlayerToChamberPath1 = moveSamples2Path.endTrajectory().fresh()
-            .strafeTo(new Vector2d(-3, -32.5));
+        TrajectoryActionBuilder humanPlayerToChamberPath1 = retrieveSample2Pt2Path.endTrajectory().fresh()
+            .strafeTo(new Vector2d(-3, -30.5));
 
         Action humanPlayerToChamber1 = humanPlayerToChamberPath1.build();
 
         TrajectoryActionBuilder chamberToHumanPlayerPath1 = humanPlayerToChamberPath1.endTrajectory().fresh()
-            .strafeTo(new Vector2d(45, -51));
+            .strafeTo(new Vector2d(45, -52));
 
         Action chamberToHumanPlayer1 = chamberToHumanPlayerPath1.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath2 = chamberToHumanPlayerPath1.endTrajectory().fresh()
-                .strafeTo(new Vector2d(0, -32.5));
+                .strafeTo(new Vector2d(0, -30.5));
 
         Action humanPlayerToChamber2 = humanPlayerToChamberPath2.build();
 
         TrajectoryActionBuilder chamberToHumanPlayerPath2 = humanPlayerToChamberPath2.endTrajectory().fresh()
-                .strafeTo(new Vector2d(45, -51));
+                .strafeTo(new Vector2d(45, -52));
 
         Action chamberToHumanPlayer2 = chamberToHumanPlayerPath2.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath3 = chamberToHumanPlayerPath2.endTrajectory().fresh()
-                .strafeTo(new Vector2d(3, -32.5));
+                .strafeTo(new Vector2d(3, -30.5));
 
         Action humanPlayerToChamber3 = humanPlayerToChamberPath3.build();
 
         TrajectoryActionBuilder chamberToHumanPlayerPath3 = humanPlayerToChamberPath3.endTrajectory().fresh()
-                .strafeTo(new Vector2d(45, -51));
+                .strafeTo(new Vector2d(45, -52));
 
         Action chamberToHumanPlayer3 = chamberToHumanPlayerPath3.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath4 = chamberToHumanPlayerPath3.endTrajectory().fresh()
-                .strafeTo(new Vector2d(6, -32.5));
+                .strafeTo(new Vector2d(6, -30.5));
 
         Action humanPlayerToChamber4 = humanPlayerToChamberPath4.build();
 
-        TrajectoryActionBuilder inChamberToParkPath = humanPlayerToChamberPath4.endTrajectory().fresh()
+        TrajectoryActionBuilder inChamberToParkPath = humanPlayerToChamberPath3.endTrajectory().fresh()
             .strafeToConstantHeading(new Vector2d(60, -60));
 
         Action inChamberToPark = inChamberToParkPath.build();
@@ -220,10 +231,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                     new SleepAction(.3)
                 ),
                 humanPlayerToChamber1,
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
             ),
-            new SleepAction(.25),
-            robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+            robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
             new SleepAction(.5),
             new InstantAction(robot::openSpecimenClaw),
             new SleepAction(.25)
@@ -238,10 +248,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber2,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
                 ),
-                new SleepAction(.25),
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
                 new SleepAction(.5),
                 new InstantAction(robot::openSpecimenClaw),
                 new SleepAction(.25)
@@ -256,10 +265,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber3,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
                 ),
-                new SleepAction(.25),
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
                 new SleepAction(.5),
                 new InstantAction(robot::openSpecimenClaw),
                 new SleepAction(.25)
@@ -274,10 +282,10 @@ public class UnifiedAutonomous extends LinearOpMode {
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber4,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35)
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
                 ),
                 new SleepAction(.25),
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
                 new SleepAction(.5),
                 new InstantAction(robot::openSpecimenClaw),
                 new SleepAction(.25)
@@ -301,12 +309,18 @@ public class UnifiedAutonomous extends LinearOpMode {
                 new InstantAction(robot::specimenArmToPickupAuto)
         );
 
+        TrajectoryActionBuilder spinToIntakePath = humanPlayerToChamberPath3.endTrajectory().fresh()
+                .strafeTo(new Vector2d(3, -32))
+                .turnTo(Math.PI / 2);
+
+        Action spinToIntake = spinToIntakePath.build();
+
         robot.writeToTelemetry("INIT STATUS", "READY");
         robot.updateTelemetry();
 
         waitForStart(); // setup done actually do things
 
-        robot.setWristPosition(SeasonalRobot.WristPosition.HIGH);
+        robot.setWristPosition(SeasonalRobot.WristPosition.LOW);
 
         switch(currentLocation){
             case RedFar:
@@ -319,25 +333,27 @@ public class UnifiedAutonomous extends LinearOpMode {
                 Actions.runBlocking(new SequentialAction(
                     new ParallelAction(
                         toChamber,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.35),
+                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5),
                         new SequentialAction(
                             new InstantAction(robot::closeSpecimenClaw),
                             new InstantAction(robot::specimenArmToHookAuto),
                             new SleepAction(.3) // wait for movement
                         )
                     ),
-                    robot.roadrunnerRaiseSpecimenSlideToHeight(0.85),
+                    robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
                     new SleepAction(.5),
-                    new InstantAction(robot::specimenArmToPickupAuto),
                     new InstantAction(robot::openSpecimenClaw),
                     new SleepAction(.25),
                     new ParallelAction(
                         // time to go move samples
                         new SequentialAction(
                             new InstantAction(robot::specimenArmToHookAuto),
-                            moveSamples,
+                            moveSample1,
+                            moveSample2,
                             new InstantAction(robot::specimenArmToPickupAuto),
-                            moveSamples2
+                            moveSample2Pt2
+                            //moveSample3,
+                            //moveSample3Pt2
                         ), // this puts us at human player spot
                         robot.roadrunnerRaiseSpecimenSlideToHeight(0)
                     ),
@@ -347,14 +363,20 @@ public class UnifiedAutonomous extends LinearOpMode {
                     clipSpecimen2,
                     resetForNextSpecimen2,
                     clipSpecimen3,
-                    resetForNextSpecimen3,
-                    clipSpecimen4,
+                    //resetForNextSpecimen3,
+                    //clipSpecimen4,
                     // park
+                    new SleepAction(.25),
                     new ParallelAction(
-                        inChamberToPark,
+                        //inChamberToPark,
+                        new SequentialAction(
+                            new InstantAction(() -> robot.setWristPosition(SeasonalRobot.WristPosition.HIGH)),
+                            spinToIntake,
+                            robot.roadrunnerExtendHorizontalSlideToLength(0.5)
+                        ),
                         new SequentialAction(
                             robot.roadrunnerRaiseSpecimenSlideToHeight(0),
-                            new InstantAction(robot::specimenArmToHookAuto),
+                            new InstantAction(robot::specimenArmToPickup),
                             new SleepAction(0.3)
                         )
                     )

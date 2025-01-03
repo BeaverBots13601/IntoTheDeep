@@ -109,7 +109,7 @@ public class SeasonalRobot extends BaseRobot {
                 telemetryPacket.put("Motor At", leftRearVerticalArmMotor.getCurrentPosition());
                 telemetryPacket.put("Motor Moving To", leftRearVerticalArmMotor.getTargetPosition());
 
-                if(leftRearVerticalArmMotor.isBusy()) return false;
+                if(leftRearVerticalArmMotor.isBusy()) return true;
 
                 leftRearVerticalArmMotor.setPower(0);
                 rightRearVerticalArmMotor.setPower(0);
@@ -117,7 +117,7 @@ public class SeasonalRobot extends BaseRobot {
                 leftRearVerticalArmMotor.setMode(before);
                 rightRearVerticalArmMotor.setMode(before);
 
-                return true;
+                return false;
             }
         };
     }
@@ -188,6 +188,8 @@ public class SeasonalRobot extends BaseRobot {
                 telemetryPacket.put("Motor At", specimenSlideMotor.getCurrentPosition());
                 telemetryPacket.put("Motor Moving To", specimenSlideMotor.getTargetPosition());
 
+                // FIXME: This is a big bug. Our auto will require too much of a rework to fix it
+                // atm. Should return true; current implementation is weird and holds height.
                 if(specimenSlideMotor.isBusy()) return false;
 
                 specimenSlideMotor.setPower(0);
@@ -234,6 +236,39 @@ public class SeasonalRobot extends BaseRobot {
         currentSpecimenSlideAction.run();
     }
 
+    public Action roadrunnerExtendHorizontalSlideToLength(double dist){
+        return new Action() {
+            private boolean initialized = false;
+            private DcMotor.RunMode before;
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (!initialized){
+                    before = horizontalArmMotor.getMode();
+
+                    horizontalArmMotor.setTargetPosition((int) (constants.CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS * dist));
+
+                    horizontalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    horizontalArmMotor.setPower(1);
+
+                    initialized = true;
+                }
+
+                telemetryPacket.put("Motor At", horizontalArmMotor.getCurrentPosition());
+                telemetryPacket.put("Motor Moving To", horizontalArmMotor.getTargetPosition());
+
+                if (horizontalArmMotor.isBusy()) return true;
+
+                horizontalArmMotor.setPower(0);
+
+                horizontalArmMotor.setMode(before);
+
+                return false;
+            }
+        };
+    }
+
     public void interruptCurrentSpecimenSlideTask(){
         if(currentSpecimenSlideAction != null && currentSpecimenSlideAction.isAlive()){
             currentSpecimenSlideAction.interrupt(); // interrupt current movement if running
@@ -276,6 +311,7 @@ public class SeasonalRobot extends BaseRobot {
     public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.21); }
 // todo tune me
     public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.97); }
+    public void specimenArmToHang(){ specimenFlipServo.setPosition(.73); }
 
     public enum LimiterState {
         // is this enum hell?
@@ -298,9 +334,10 @@ public class SeasonalRobot extends BaseRobot {
 
     public enum WristPosition {
         // todo needs tuning
-        HIGH(0.33),
-        MID(0.5),
-        LOW(1);
+        HIGH(0.29),
+        //MID(0.5),
+        LOW(.86),
+        INIT(1);
 
         private final double position;
 
@@ -318,12 +355,6 @@ public class SeasonalRobot extends BaseRobot {
         return currentPos;
     }
 
-    public void reverseIntakeDirection(){
-        toggleIntake();
-        savedPow *= -1;
-        toggleIntake();
-    }
-
     public void reverseIntake(){
         leftRotationServo.setPower(1);
         rightRotationServo.setPower(1);
@@ -333,21 +364,6 @@ public class SeasonalRobot extends BaseRobot {
         rightRotationServo.setPower(-1);
     }
 
-    private volatile double savedPow = -1;
-    public void toggleIntake(){
-        if(leftRotationServo.getPower() == 0){
-            leftRotationServo.setPower(savedPow);
-            rightRotationServo.setPower(savedPow);
-        } else {
-            savedPow = leftRotationServo.getPower();
-            leftRotationServo.setPower(0);
-            rightRotationServo.setPower(0);
-        }
-    }
-    public void startIntake(){
-        leftRotationServo.setPower(savedPow);
-        rightRotationServo.setPower(savedPow);
-    }
     public void stopIntake(){
         leftRotationServo.setPower(0);
         rightRotationServo.setPower(0);
@@ -361,5 +377,19 @@ public class SeasonalRobot extends BaseRobot {
 
     public NormalizedRGBA getColorSensorColor(){
         return colorSensor.getNormalizedColors();
+    }
+
+
+    private DcMotor.RunMode oldMode = DcMotor.RunMode.RUN_USING_ENCODER;
+    public void lockSpecimenSlideHeight(){
+        oldMode = specimenSlideMotor.getMode();
+        specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        specimenSlideMotor.setTargetPosition(specimenSlideMotor.getCurrentPosition());
+        specimenSlideMotor.setPower(1);
+    }
+
+    public void unlockSpecimenSlideHeight(){
+        specimenSlideMotor.setMode(oldMode);
+        specimenSlideMotor.setPower(0);
     }
 }
