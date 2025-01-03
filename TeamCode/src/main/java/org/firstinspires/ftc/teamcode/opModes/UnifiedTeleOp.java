@@ -23,7 +23,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     protected DriveMode orientationMode = DriveMode.ROBOT;
     protected RobotConfiguration configurationMode = RobotConfiguration.RESTRICTED;
     protected TeamColor teamColor = TeamColor.BLUE; // override me
-    protected boolean allowBaskets = true; // override me
+    protected boolean allowBaskets = false; // override me
     private SeasonalRobot typedRobot;
     private BaseRobot robot;
     private Gamepad currentGamepadOne = new Gamepad();
@@ -53,6 +53,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     }
 
     private List<Action> running = new ArrayList<>();
+    private Action runningSpecimenSlideAction = null;
     // we use multiple results to reduce false negatives. 3 works well
     private final int numResultsToUse = 3;
     private List<ColorResult> lastResultsArr = new ArrayList<>(numResultsToUse);
@@ -150,16 +151,17 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 continue;
             }
 
-            typedRobot.writeToTelemetry("b", typedRobot.horizontalArmFarBoundary());
-
             // horizontal arm (gp 1)
             double val = currentGamepadOne.right_trigger - currentGamepadOne.left_trigger;
             robot.writeToTelemetry("Horizontal Arm Power", val);
-            if (!typedRobot.horizontalArmFarBoundary() || val < 0) {
-                typedRobot.setHorizontalArmPower(val);
-            } else {
-                typedRobot.setHorizontalArmPower(0);
-            }
+            typedRobot.setHorizontalArmPower(val);
+
+//            if (runningSpecimenSlideAction == null){
+//                if (manualVerticalMode)
+//            } else {
+//                if(!runningSpecimenSlideAction.run(new TelemetryPacket())) runningSpecimenSlideAction = null;
+//                runningSpecimenSlideAction.
+//            }
 
             // vertical arm (gp 2)
             float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
@@ -308,6 +310,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 ascentMode = true;
                 manualVerticalMode = true; // no auto controls because slide issue
                 typedRobot.setSpecimenSlidePower(0);
+                typedRobot.specimenArmToHang();
                 gamepad2.rumble(300);
                 //if (!manualVerticalMode) typedRobot.raiseRearVerticalArmsToHeightAsync(0.5); // need to dial value
             }
