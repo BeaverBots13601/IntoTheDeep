@@ -181,7 +181,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action moveSample3Pt2 = moveSample3Pt2Path.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath1 = retrieveSample2Pt2Path.endTrajectory().fresh()
-            .strafeTo(new Vector2d(-3, -30.5));
+            .strafeTo(new Vector2d(-3, -30));
 
         Action humanPlayerToChamber1 = humanPlayerToChamberPath1.build();
 
@@ -191,7 +191,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer1 = chamberToHumanPlayerPath1.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath2 = chamberToHumanPlayerPath1.endTrajectory().fresh()
-                .strafeTo(new Vector2d(0, -30.5));
+                .strafeTo(new Vector2d(0, -30));
 
         Action humanPlayerToChamber2 = humanPlayerToChamberPath2.build();
 
@@ -201,7 +201,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer2 = chamberToHumanPlayerPath2.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath3 = chamberToHumanPlayerPath2.endTrajectory().fresh()
-                .strafeTo(new Vector2d(3, -30.5));
+                .strafeTo(new Vector2d(3, -30));
 
         Action humanPlayerToChamber3 = humanPlayerToChamberPath3.build();
 
@@ -211,7 +211,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer3 = chamberToHumanPlayerPath3.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath4 = chamberToHumanPlayerPath3.endTrajectory().fresh()
-                .strafeTo(new Vector2d(6, -30.5));
+                .strafeTo(new Vector2d(6, -30));
 
         Action humanPlayerToChamber4 = humanPlayerToChamberPath4.build();
 
@@ -231,9 +231,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                     new SleepAction(.3)
                 ),
                 humanPlayerToChamber1,
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
+                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
             ),
-            robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
+            robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
             new SleepAction(.5),
             new InstantAction(robot::openSpecimenClaw),
             new SleepAction(.25)
@@ -248,9 +248,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber2,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
+                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
                 ),
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
+                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                 new SleepAction(.5),
                 new InstantAction(robot::openSpecimenClaw),
                 new SleepAction(.25)
@@ -265,9 +265,9 @@ public class UnifiedAutonomous extends LinearOpMode {
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber3,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
+                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
                 ),
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
+                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                 new SleepAction(.5),
                 new InstantAction(robot::openSpecimenClaw),
                 new SleepAction(.25)
@@ -282,10 +282,10 @@ public class UnifiedAutonomous extends LinearOpMode {
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber4,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5)
+                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
                 ),
                 new SleepAction(.25),
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
+                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                 new SleepAction(.5),
                 new InstantAction(robot::openSpecimenClaw),
                 new SleepAction(.25)
@@ -293,19 +293,19 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         ParallelAction resetForNextSpecimen1 = new ParallelAction(
             chamberToHumanPlayer1,
-            robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+            robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
             new InstantAction(robot::specimenArmToPickupAuto)
         );
 
         ParallelAction resetForNextSpecimen2 = new ParallelAction(
                 chamberToHumanPlayer2,
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
                 new InstantAction(robot::specimenArmToPickupAuto)
         );
 
         ParallelAction resetForNextSpecimen3 = new ParallelAction(
                 chamberToHumanPlayer3,
-                robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
                 new InstantAction(robot::specimenArmToPickupAuto)
         );
 
@@ -333,14 +333,14 @@ public class UnifiedAutonomous extends LinearOpMode {
                 Actions.runBlocking(new SequentialAction(
                     new ParallelAction(
                         toChamber,
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0.5),
+                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5),
                         new SequentialAction(
                             new InstantAction(robot::closeSpecimenClaw),
                             new InstantAction(robot::specimenArmToHookAuto),
                             new SleepAction(.3) // wait for movement
                         )
                     ),
-                    robot.roadrunnerRaiseSpecimenSlideToHeight(0.8),
+                    robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                     new SleepAction(.5),
                     new InstantAction(robot::openSpecimenClaw),
                     new SleepAction(.25),
@@ -355,7 +355,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                             //moveSample3,
                             //moveSample3Pt2
                         ), // this puts us at human player spot
-                        robot.roadrunnerRaiseSpecimenSlideToHeight(0)
+                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0)
                     ),
                     // do specimens
                     clipSpecimen1,
@@ -375,7 +375,7 @@ public class UnifiedAutonomous extends LinearOpMode {
                             robot.roadrunnerExtendHorizontalSlideToLength(0.5)
                         ),
                         new SequentialAction(
-                            robot.roadrunnerRaiseSpecimenSlideToHeight(0),
+                            robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
                             new InstantAction(robot::specimenArmToPickup),
                             new SleepAction(0.3)
                         )
