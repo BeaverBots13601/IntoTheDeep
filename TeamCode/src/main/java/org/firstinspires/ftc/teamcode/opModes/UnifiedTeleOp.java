@@ -5,9 +5,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
@@ -15,6 +13,7 @@ import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.WristPosition;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
+import org.firstinspires.ftc.teamcode.TeamColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     protected DriveMode orientationMode = DriveMode.ROBOT; // override me
     protected RobotConfiguration configurationMode = RobotConfiguration.RESTRICTED; // override me
     protected TeamColor teamColor = TeamColor.BLUE; // override me
-    protected boolean allowBaskets = false; // override me
     private SeasonalRobot typedRobot;
     private BaseRobot robot;
     private Gamepad currentGamepadOne = new Gamepad();
@@ -42,27 +40,12 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         FIELD,
         ROBOT
     }
-    protected enum TeamColor {
-        RED,
-        BLUE
-    }
-    private enum Color {
-        RED,
-        GREEN,
-        BLUE,
-        UNKNOWN
-    }
 
     private List<Action> running = new ArrayList<>();
     private InterruptableAction runningSpecimenSlideAction = null;
     // class instead of primitive to allow nullability
     private Integer holdingSpecimenSlidePos = null;
     // we use multiple results to reduce false negatives. 3 works well
-    private final int numResultsToUse = 3;
-    private List<ColorResult> lastResultsArr = new ArrayList<>(numResultsToUse);
-    private boolean pickingUp = false;
-    private boolean intakeRunning = false;
-    private boolean expellingBad = false;
     public void runOpMode() {
         if (configurationMode == RobotConfiguration.RESTRICTED) {
             robot = new BaseRobot(this, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
@@ -82,14 +65,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         previousGamepadOne.copy(currentGamepadOne);
         previousGamepadTwo.copy(currentGamepadTwo);
 
-        // preload array; values will be expunged shortly
-        for (int i = 0; i < numResultsToUse; i++){
-            lastResultsArr.add(null);
-        }
-
         waitForStart();
-        // we can't extend past the boundary in init (is that true?) so do it here
-        if (typedRobot != null) { typedRobot.setWristPosition(WristPosition.HIGH); }
         while (opModeIsActive()) {
             currentGamepadOne.copy(gamepad1);
             currentGamepadTwo.copy(gamepad2);
@@ -210,64 +186,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 if(lim == LimiterState.NONE) typedRobot.setRearVerticalArmPower(a);
             }
 
-            ColorResult lastResult = processColorSensorResult(typedRobot.getColorSensorColor());
-            lastResultsArr.remove(0);
-            lastResultsArr.add(lastResult);
-            robot.writeToTelemetry("Color Sensor Color", lastResult.highestColor);
-            robot.writeToTelemetry("Color Sensor Strength", lastResult.highestColorValue);
-
-            if (intakeRunning){
-                if (pickingUp){
-                    if (typedRobot.getColorSensorProximity(DistanceUnit.MM) < 25) { // have one
-                        Color consensusColor = Color.UNKNOWN;
-                        boolean consensusGoodReading = true;
-                        for (ColorResult res : lastResultsArr) {
-                            if (res == null) { consensusGoodReading = false; break; } // safety case
-                            if (consensusColor == Color.UNKNOWN) consensusColor = res.highestColor;
-                            // .002 is a bit higher than the field consistently reads.
-                            if (res.highestColorValue < .002) { consensusGoodReading = false; break; }
-                            // Want all colors to match
-                            if (res.highestColor != consensusColor) { consensusGoodReading = false; break; }
-                        }
-
-                        if (consensusGoodReading){ // otherwise defer judgement
-                            if (
-                                (consensusColor == Color.BLUE && teamColor == TeamColor.BLUE) ||
-                                (consensusColor == Color.RED && teamColor == TeamColor.RED)   ||
-                                (consensusColor == Color.GREEN && allowBaskets)
-                            ){
-                                // sample we want
-                                typedRobot.stopIntake();
-                                typedRobot.setWristPosition(WristPosition.HIGH);
-                                intakeRunning = false;
-                            } else {
-                                // wrong color; reject
-                                expellingBad = true;
-                                pickingUp = false;
-                                typedRobot.reverseIntake();
-                            }
-                        }
-                    }
-                } else {
-                    if (typedRobot.getColorSensorProximity(DistanceUnit.MM) > 40) {
-                        if (!expellingBad){
-                            typedRobot.stopIntake();
-                            typedRobot.setWristPosition(WristPosition.HIGH);
-                            intakeRunning = false;
-                        } else {
-                            expellingBad = false;
-                            pickingUp = true;
-                            typedRobot.forwardIntake();
-                        }
-                    }
-                }
-            }
-
-            robot.writeToTelemetry("Color Sensor Prox", typedRobot.getColorSensorProximity(DistanceUnit.MM));
-            robot.writeToTelemetry("Intake On", intakeRunning);
-            robot.writeToTelemetry("Intake Expelling", expellingBad);
-            robot.writeToTelemetry("Intake Intaking", pickingUp);
-
             previousGamepadOne.copy(currentGamepadOne);
             previousGamepadTwo.copy(currentGamepadTwo);
             running = continued;
@@ -351,30 +269,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             }
         }
 
-        // intake automation (gp1)
-        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
-            if (intakeRunning){
-                typedRobot.setWristPosition(WristPosition.HIGH);
-                // abort case todo needs work?
-                typedRobot.stopIntake();
-                intakeRunning = false;
-                expellingBad = false; // clear state
-            } else {
-                typedRobot.setWristPosition(WristPosition.LOW);
-                if(typedRobot.getColorSensorProximity(DistanceUnit.MM) > 25){ // typically rests ~20mm? away; floor ~44mm
-                    // don't have one, so...
-                    typedRobot.forwardIntake();
-                    intakeRunning = true;
-                    pickingUp = true; // save state for later
-                } else {
-                    // have one that needs to LEAVE
-                    typedRobot.reverseIntake();
-                    intakeRunning = true;
-                    pickingUp = false;
-                }
-            }
-        }
-
         // toggle manual verticals (gp2)
         if (currentGamepadTwo.dpad_left && !previousGamepadTwo.dpad_left){
             manualVerticalMode = !manualVerticalMode;
@@ -419,27 +313,5 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         } else {
             orientationMode = DriveMode.FIELD;
         }
-    }
-
-    static class ColorResult {
-        Color highestColor;
-        float highestColorValue;
-    }
-    private static ColorResult processColorSensorResult(NormalizedRGBA result){
-        ColorResult out = new ColorResult();
-
-        // todo can this logic be bettered?
-        if (result.blue > Math.max(result.red, result.green)){
-            out.highestColor = Color.BLUE;
-            out.highestColorValue = result.blue;
-        } else if (result.red > Math.max(result.blue, result.green)){
-            out.highestColor = Color.RED;
-            out.highestColorValue = result.red;
-        } else if (result.green > Math.max(result.blue, result.red)) {
-            out.highestColor = Color.GREEN;
-            out.highestColorValue = result.green;
-        }
-
-        return out;
     }
 }

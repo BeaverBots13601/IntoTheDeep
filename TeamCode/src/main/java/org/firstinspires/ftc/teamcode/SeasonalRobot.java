@@ -27,9 +27,6 @@ public class SeasonalRobot extends BaseRobot {
     private final Servo specimenClawServo;
     private final Servo specimenFlipServo;
     private final Servo wristServo;
-    private final CRServo leftRotationServo;
-    private final CRServo rightRotationServo;
-    private final RevColorSensorV3 colorSensor;
 
     // candidate to be moved to base robot
 
@@ -47,36 +44,15 @@ public class SeasonalRobot extends BaseRobot {
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         specimenFlipServo = setUpServo("specimenFlipServo");
         wristServo = setUpServo("wristServo");
-        leftRotationServo = opmode.hardwareMap.get(CRServo.class, "leftRotationServo");
-        leftRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftRotationServo.setPower(0);
-        rightRotationServo = opmode.hardwareMap.get(CRServo.class, "rightRotationServo");
-        rightRotationServo.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightRotationServo.setPower(0);
-        colorSensor = opmode.hardwareMap.get(RevColorSensorV3.class, "colorSensor");
         openSpecimenClaw();
         specimenArmToPickup();
-        setWristPosition(WristPosition.LOW);
+        setWristPosition(WristPosition.INIT);
     }
     /*
     This is where all non-standard hardware components should be initialized, stored, and gotten.
     For example, if there is a servo that moves a piece to put a scoring component where it needs to go, but we
     won't need that next year probably, put it here.
     */
-
-//    public void toggleIntake(){
-//        intakeServo.setPower(intakeServo.getPower() == 0 ? 0.5 : 0);
-//    }
-
-//    public void reverseIntakeDirection(){
-//        if (intakeServo.getDirection() == DcMotorSimple.Direction.FORWARD) {
-//            intakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
-//        } else {
-//            intakeServo.setDirection(DcMotorSimple.Direction.FORWARD);
-//        }
-//        toggleIntake();
-//        toggleIntake();
-//    }
 
     public InterruptableAction roadrunnerMoveRearVerticalSlidesToHeight(double height){
         return new InterruptableAction() {
@@ -120,6 +96,7 @@ public class SeasonalRobot extends BaseRobot {
         };
     }
 
+    @Deprecated
     public Action roadrunnerRaiseSpecimenSlideToHeightBugged(double height){
         return new Action() {
             private boolean initialized = false;
@@ -290,9 +267,7 @@ public class SeasonalRobot extends BaseRobot {
     }
 
     public enum WristPosition {
-        // todo needs tuning
         HIGH(0.29),
-        //MID(0.5),
         LOW(.86),
         INIT(1);
 
@@ -302,38 +277,10 @@ public class SeasonalRobot extends BaseRobot {
 
         WristPosition(double pos){ this.position = pos; }
     }
-    private WristPosition currentPos;
+    @Deprecated // exists only for auto
     public void setWristPosition(WristPosition pos){
         wristServo.setPosition(pos.getPosition());
-        currentPos = pos;
-    }
-
-    public WristPosition getWristPosition(){
-        return currentPos;
-    }
-
-    public void reverseIntake(){
-        leftRotationServo.setPower(1);
-        rightRotationServo.setPower(1);
-    }
-
-    public void forwardIntake(){
-        leftRotationServo.setPower(-1);
-        rightRotationServo.setPower(-1);
-    }
-
-    public void stopIntake(){
-        leftRotationServo.setPower(0);
-        rightRotationServo.setPower(0);
     }
 
     public boolean horizontalArmFarBoundary() { return horizontalArmMotor.getCurrentPosition() > 2000; }
-
-    public double getColorSensorProximity(DistanceUnit unit){
-        return colorSensor.getDistance(unit);
-    }
-
-    public NormalizedRGBA getColorSensorColor(){
-        return colorSensor.getNormalizedColors();
-    }
 }
