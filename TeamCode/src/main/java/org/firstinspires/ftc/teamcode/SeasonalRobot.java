@@ -4,16 +4,12 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 
 // right-front (par0) & left-back (perp) are our drive motors for measuring (port 0 & 3 issue)
@@ -24,28 +20,23 @@ public class SeasonalRobot extends BaseRobot {
     private final DcMotorEx rightRearVerticalArmMotor;
     private final DcMotorEx horizontalArmMotor;
     private final DcMotorEx specimenSlideMotor;
-    private final Servo specimenClawServo;
-    private final Servo specimenFlipServo;
-    private final Servo wristServo;
-
     // candidate to be moved to base robot
 
     public SeasonalRobot(LinearOpMode opmode) {
-        super(opmode, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
+        super(opmode);
         // setup specialized stuff
-        leftRearVerticalArmMotor = createDefaultMotor("leftRearVerticalArmMotor");
+        leftRearVerticalArmMotor = HardwareMechanism.createDefaultMotor(opmode.hardwareMap, "leftRearVerticalArmMotor");
         leftRearVerticalArmMotor.setDirection(DcMotorSimple.Direction.FORWARD); // hardware thing
-        rightRearVerticalArmMotor = createDefaultMotor("rightRearVerticalArmMotor");
+        rightRearVerticalArmMotor = HardwareMechanism.createDefaultMotor(opmode.hardwareMap, "rightRearVerticalArmMotor");
         rightRearVerticalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        horizontalArmMotor = createDefaultMotor("horizontalArmMotor");
+        horizontalArmMotor = HardwareMechanism.createDefaultMotor(opmode.hardwareMap, "horizontalArmMotor");
         horizontalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        specimenClawServo = setUpServo("specimenClawServo");
-        specimenSlideMotor = createDefaultMotor("specimenSlideMotor");
+        specimenClawServo = HardwareMechanism.setUpServo(opmode.hardwareMap, "specimenClawServo");
+        specimenSlideMotor = HardwareMechanism.createDefaultMotor(opmode.hardwareMap, "specimenSlideMotor");
         specimenSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        specimenFlipServo = setUpServo("specimenFlipServo");
-        wristServo = setUpServo("wristServo");
+        specimenFlipServo = HardwareMechanism.setUpServo(opmode.hardwareMap, "specimenFlipServo");
+        wristServo = HardwareMechanism.setUpServo(opmode.hardwareMap, "wristServo");
         openSpecimenClaw();
-        specimenArmToPickup();
         setWristPosition(WristPosition.INIT);
     }
     /*
@@ -233,18 +224,24 @@ public class SeasonalRobot extends BaseRobot {
         horizontalArmMotor.setPower(speed);
     }
 
-    public void closeSpecimenClaw(){
-        specimenClawServo.setPosition(.52);
-    }
-
+    @Deprecated
+    private final Servo specimenClawServo;
+    @Deprecated
+    private final Servo specimenFlipServo;
+    @Deprecated // living for auto
+    public void closeSpecimenClaw(){ specimenClawServo.setPosition(.52); }
+    @Deprecated
     public void openSpecimenClaw(){ specimenClawServo.setPosition(.23); }
 
+    @Deprecated
     public void specimenArmToPickup(){ specimenFlipServo.setPosition(1); }
-    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.21); }
+    @Deprecated
     public void specimenArmToHang(){ specimenFlipServo.setPosition(.73); }
 
     // auto uses flipped positions
+    @Deprecated
     public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.21); }
+    @Deprecated
     public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.97); }
 
     public enum LimiterState {
@@ -266,6 +263,9 @@ public class SeasonalRobot extends BaseRobot {
         return LimiterState.NONE;
     }
 
+    @Deprecated
+    private final Servo wristServo;
+    @Deprecated
     public enum WristPosition {
         HIGH(0.29),
         LOW(.86),

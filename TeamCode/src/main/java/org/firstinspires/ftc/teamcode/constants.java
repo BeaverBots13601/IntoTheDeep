@@ -5,31 +5,11 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class constants {
-    public enum driveMotorName { // expecting to be same for forseeable future
-        leftFront, leftBack, rightFront, rightBack
-
-    }
     public static final double ENCODER_TICKS = 537.70; // changes if motor changes
     public static final int TELEMETRY_MS_TRANSMISSION_INTERVAL = 25; // no clue what this does tbh
 
-    public enum SPEEDS {
-        NORMAL(0.65),
-        FAST(.80),
-        SLOW(0.4),
-        CUSTOM_FTC_DASHBOARD(constants.CUSTOM_FTC_DASHBOARD_SPEED);
-
-        private double speed;
-        public double getNumericalSpeed(){
-            return speed;
-        }
-        SPEEDS(double speed){
-            this.speed = speed;
-        }
-    }
     // This speed is designed to be set dynamically within FTC Dashboard.
     public static double CUSTOM_FTC_DASHBOARD_SPEED = 0.65;
-    // Default speed mode is set here; we can adjust it from FTCDashboard this way
-    public static SPEEDS currentSpeedMode = SPEEDS.NORMAL;
     // Heading global var
     public static double ROBOT_HEADING = 0;
 

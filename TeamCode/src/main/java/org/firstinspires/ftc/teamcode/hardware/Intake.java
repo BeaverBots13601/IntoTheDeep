@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 public class Intake extends HardwareMechanism {
-    private static boolean functional; // todo does this being static work?
-
     // magic numbers
     private static final int numResultsToUse = 3;
 
@@ -37,14 +35,15 @@ public class Intake extends HardwareMechanism {
     private TeamColor teamColor;
     private boolean allowBaskets;
 
-    private Intake(HardwareMap hardwareMap, InitData data, BiConsumer<String, Object> telemetryFunc){
+    public Intake(HardwareMap hardwareMap, InitData data, BiConsumer<String, Object> telemetryFunc){
+        super(hardwareMap, data, telemetryFunc);
         try {
             leftRotationServo = hardwareMap.get(CRServo.class, "leftRotationServo");
             rightRotationServo = hardwareMap.get(CRServo.class, "rightRotationServo");
             colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
             wristServo = setUpServo(hardwareMap, "wristServo");
         } catch(IllegalArgumentException e) {
-            functional = false; // tag as broken
+            available = false; // tag as broken
             return;
         }
         leftRotationServo.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -64,16 +63,7 @@ public class Intake extends HardwareMechanism {
         // must be here to be legal during init (supposedly)
         setWristPosition(WristPosition.INIT);
 
-        functional = true; // tag as working
-    }
-
-    // scuffed. better way to do this?
-    // fixme: init() will call the superclass init.
-    public void init(HardwareMap hardwareMap, InitData data, BiConsumer<String, Object> telemetryFunc) {
-        // we don't do a null-check first because a new instance needs to be made every opmode
-        // because they're all the same program, stale init data would persist
-        instance = new Intake(hardwareMap, data, telemetryFunc);
-        if (!functional) instance = null;
+        available = true; // tag as working
     }
 
     public void start(BiConsumer<String, Object> telemetryFunc) {

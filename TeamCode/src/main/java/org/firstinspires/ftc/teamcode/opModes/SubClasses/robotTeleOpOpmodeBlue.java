@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opModes.SubClasses;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.teamcode.TeamColor;
 import org.firstinspires.ftc.teamcode.opModes.UnifiedTeleOp;
 
@@ -11,7 +12,7 @@ import org.firstinspires.ftc.teamcode.opModes.UnifiedTeleOp;
 public class robotTeleOpOpmodeBlue extends UnifiedTeleOp {
     @Override
     public void runOpMode(){
-        this.orientationMode = DriveMode.FIELD;
+        this.orientationMode = HardwareMechanism.DriveMode.FIELD;
         this.configurationMode = RobotConfiguration.FULL;
         this.teamColor = TeamColor.BLUE;
         super.runOpMode();

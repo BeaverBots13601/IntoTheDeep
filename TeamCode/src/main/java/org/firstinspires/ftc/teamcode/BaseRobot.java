@@ -10,21 +10,14 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorImplEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 import org.firstinspires.ftc.teamcode.vision.AprilTagModule;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
@@ -34,7 +27,6 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -56,10 +48,7 @@ import java.util.List;
 
 
 public class BaseRobot {
-    DcMotorEx[] driveMotors;
     protected LinearOpMode opMode;
-    private final double wheelDiameter;
-    private final double robotDiameter;
     private final IMU imu;
     protected final FtcDashboard dashboard = FtcDashboard.getInstance();
     private TelemetryPacket packet = new TelemetryPacket();
@@ -91,14 +80,10 @@ public class BaseRobot {
         return limelight.getLatestResult().getBotpose_MT2();
     }
 
-    public BaseRobot(LinearOpMode opmode, double wheelDiameter, double robotDiameter) {
+    public BaseRobot(LinearOpMode opmode) {
         this.opMode = opmode;
-        this.driveMotors = new DcMotorEx[constants.driveMotorName.values().length];
         this.opMode.telemetry.setMsTransmissionInterval(constants.TELEMETRY_MS_TRANSMISSION_INTERVAL);
-        createDriveMotors();
 
-        this.wheelDiameter = wheelDiameter;
-        this.robotDiameter = robotDiameter;
         this.imu = createImu();
 
         initBulkReads();
@@ -114,146 +99,6 @@ public class BaseRobot {
         //limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
         //limelight.pipelineSwitch(0);
         //limelight.start();
-    }
-
-    /**
-     * Creates a default motor with the settings 'RUN_USING_ENCODER' and 'FLOAT on zero power'.
-     * Reverses if name includes left.
-     */
-    protected DcMotorEx createDefaultMotor(String motorName) {
-        DcMotorEx motor = this.opMode.hardwareMap.get(DcMotorEx.class, motorName);
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        if (motorName.toLowerCase().contains("left")) {
-            motor.setDirection(DcMotorSimple.Direction.REVERSE);
-        }
-        return motor;
-    }
-
-    private void createDriveMotors() {
-        for (constants.driveMotorName driveMotorName : constants.driveMotorName.values()) {
-            DcMotorEx driveMotor = createDefaultMotor(driveMotorName.name());
-            driveMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            this.driveMotors[driveMotorName.ordinal()] = driveMotor;
-            //this.driveMotors[driveMotorName.ordinal()].setTargetPositionTolerance(10);
-        }
-    }
-
-    public void setDriveMotors(double[] powers, DcMotor.RunMode mode) {
-        for (constants.driveMotorName driveMotorName : constants.driveMotorName.values()) {
-            this.driveMotors[driveMotorName.ordinal()].setMode(mode);
-            this.driveMotors[driveMotorName.ordinal()].setPower(powers[driveMotorName.ordinal()]);
-        }
-    }
-
-    public void stopDrive() {
-        double[] powers = new double[this.driveMotors.length];
-        Arrays.fill(powers, 0.0);
-        setDriveMotors(powers, DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setDriveMotors(powers, DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    private boolean isDriving() {
-        for (constants.driveMotorName a : constants.driveMotorName.values()){
-            if ((a.name().equals("rightFront")|| a.name().equals("leftBack")) && driveMotors[a.ordinal()].isBusy()){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected double inchesToEncoder(double inches) {
-        return (inches * constants.ENCODER_TICKS / (this.wheelDiameter * Math.PI));
-    }
-
-    /**
-     * Drive X number of encoder ticks
-     *
-     * @param powers Array of powers in order of leftFront, leftBack, rightFront, rightBack
-     */
-    private void driveEncoded(int[] ticks, double[] powers) {
-        for (constants.driveMotorName driveMotorName : constants.driveMotorName.values()) {
-            this.driveMotors[driveMotorName.ordinal()].setTargetPosition(ticks[driveMotorName.ordinal()]);
-        }
-
-        this.setDriveMotors(powers, DcMotor.RunMode.RUN_TO_POSITION);
-
-        while (this.opMode.opModeIsActive() && this.isDriving()) {
-            for (constants.driveMotorName driveMotorName : constants.driveMotorName.values()) {
-                writeToTelemetry("Running to", " " + ticks[driveMotorName.ordinal()]);
-                writeToTelemetry("Currently at", driveMotorName.name() + " at " + this.driveMotors[driveMotorName.ordinal()].getCurrentPosition());
-            }
-            updateTelemetry();
-        }
-
-        this.stopDrive();
-    }
-
-    /**
-     * Encoder-based drive
-     *
-     * @param inches
-     * @param power  [-1.0, 1.0]
-     */
-    public void driveInches(double inches, double power) {
-        int[] target = new int[this.driveMotors.length];
-        double[] powers = new double[this.driveMotors.length];
-        Arrays.fill(target, (int) this.inchesToEncoder(inches));
-        Arrays.fill(powers, power);
-
-        driveEncoded(target, powers);
-    }
-
-    /**
-     * turns degrees
-     *
-     * @param degrees Degrees to turn. Positive is to the right, negative to the left
-     * @param power   The power to turn at, from [0, 1]
-     */
-    public void turnDegrees(int degrees, double power) {
-        int targetInches = (int) this.inchesToEncoder(Math.toRadians(degrees) * this.robotDiameter);
-        int[] target = new int[]{targetInches, targetInches, -targetInches, -targetInches};
-        double[] powers = new double[]{power, power, -power, -power};
-
-        driveEncoded(target, powers);
-    }
-
-    /**
-     * Strafe a certain distance. Might be unreliable?
-     * @param inches The number of inches to move. + = right, - = left.
-     * @param power The speed to move at.
-     */
-    public void driveStrafe(double inches, double power) {
-        int ticks = (int) this.inchesToEncoder(inches);
-        int[] target = new int[] {ticks, -ticks, -ticks, ticks};
-        double[] powers = new double[] {power, -power, -power, power};
-
-        driveEncoded(target, powers);
-    }
-
-    /**
-     * Moves with the mecanum wheels a specified number of inches, without turning.
-     * @param inches The number of inches to move.
-     * @param angle The angle to move at in degrees. 0 would be right, 90 would be forward.
-     * @param power The speed to run at from [0, 1]
-     */
-    public void driveAtAngle(double inches, double angle, double power){
-        // technically pose shouldn't be used in base
-        Pose move = Pose.rotatePosition(inches, 0, Pose.normalizeAngle(Math.toRadians(angle)));
-        double stickRotation = 0; // todo: allow this as argument (to spin while moving)
-
-        double maxPower = Math.max(Math.abs(move.getY()) + Math.abs(move.getX()) + Math.abs(stickRotation), 1);
-        double leftFrontPower = (move.getY() + move.getX() + stickRotation) / maxPower;
-        double leftBackPower = (move.getY() - move.getX() + stickRotation) / maxPower;
-        double rightFrontPower = (move.getY() - move.getX() - stickRotation) / maxPower;
-        double rightBackPower = (move.getY() + move.getX() - stickRotation) / maxPower;
-
-        int[] target = new int[]{(int) inchesToEncoder(leftFrontPower * inches), (int) inchesToEncoder(leftBackPower * inches), (int) inchesToEncoder(rightFrontPower * inches), (int) inchesToEncoder(rightBackPower * inches)};
-        double[] powers = new double[this.driveMotors.length];
-        Arrays.fill(powers, power);
-
-        driveEncoded(target, powers);
     }
 
     private IMU createImu() {
@@ -322,11 +167,6 @@ public class BaseRobot {
             }
         });
         return webcam;
-    }
-
-    protected Servo setUpServo(String servoName) {
-        Servo servo = opMode.hardwareMap.get(Servo.class, servoName);
-        return servo;
     }
 
     /**

@@ -7,22 +7,32 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.BaseRobot;
+import org.firstinspires.ftc.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
-import org.firstinspires.ftc.teamcode.SeasonalRobot.WristPosition;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 import org.firstinspires.ftc.teamcode.TeamColor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
+
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 
 public abstract class UnifiedTeleOp extends LinearOpMode {
     /** This field may be immediately changed by the switch state update. */
-    protected DriveMode orientationMode = DriveMode.ROBOT; // override me
+    protected HardwareMechanism.DriveMode orientationMode = HardwareMechanism.DriveMode.ROBOT; // override me
     protected RobotConfiguration configurationMode = RobotConfiguration.RESTRICTED; // override me
     protected TeamColor teamColor = TeamColor.BLUE; // override me
+    protected boolean allowBaskets = false;
     private SeasonalRobot typedRobot;
     private BaseRobot robot;
     private Gamepad currentGamepadOne = new Gamepad();
@@ -36,36 +46,49 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         RESTRICTED,
         FULL
     }
-    protected enum DriveMode {
-        FIELD,
-        ROBOT
-    }
 
     private List<Action> running = new ArrayList<>();
     private InterruptableAction runningSpecimenSlideAction = null;
     // class instead of primitive to allow nullability
     private Integer holdingSpecimenSlidePos = null;
+    private ArrayList<HardwareMechanism> mechanisms = new ArrayList<>();
     // we use multiple results to reduce false negatives. 3 works well
     public void runOpMode() {
         if (configurationMode == RobotConfiguration.RESTRICTED) {
-            robot = new BaseRobot(this, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
+            robot = new BaseRobot(this);
         } else {
             robot = new SeasonalRobot(this);
             typedRobot = (SeasonalRobot) robot;
         }
 
-        //updateSwitchState(robot.getSwitchState()); temporarily removed
-        double referenceAngle;
-        if(constants.ROBOT_HEADING != 0){
-            referenceAngle = constants.ROBOT_HEADING;
-        } else {
-            referenceAngle = robot.getImuAngle();
+        // InitData
+        HardwareMechanism.InitData data = new HardwareMechanism.InitData();
+        data.allowBaskets = allowBaskets;
+        data.teamColor = teamColor;
+        data.driveMode = orientationMode;
+        data.imuAngleRad = robot.getImuAngle();
+        data.dashboardEnabled = robot.isDashboardEnabled();
+
+        // get all the classes and instantiate & keep the ones matching HardwareMechanism
+        List<Class<HardwareMechanism>> classes = getAllHardwareMechanisms();
+        for (Class<HardwareMechanism> clazz : classes){
+            try {
+                HardwareMechanism mech = clazz.getDeclaredConstructor().newInstance(hardwareMap, data, new ContainerClass(robot::writeToTelemetry).getMethod());
+                if (mech.available) mechanisms.add(mech);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
-        int tmp_deadzoneadjust = 2;
+
+        //updateSwitchState(robot.getSwitchState()); temporarily removed
         previousGamepadOne.copy(currentGamepadOne);
         previousGamepadTwo.copy(currentGamepadTwo);
 
         waitForStart();
+        for (HardwareMechanism mechanism : mechanisms){
+            mechanism.start(robot::writeToTelemetry);
+        }
+
         while (opModeIsActive()) {
             currentGamepadOne.copy(gamepad1);
             currentGamepadTwo.copy(gamepad2);
@@ -74,47 +97,22 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             robot.writeToTelemetry("Current Orientation Mode", orientationMode);
             robot.writeToTelemetry("Slides In Manual Mode", manualVerticalMode);
 
-            double speedNow = constants.currentSpeedMode.getNumericalSpeed();
-
-            float stickX = gamepad1.left_stick_x * tmp_deadzoneadjust;
-            float stickY = -gamepad1.left_stick_y * tmp_deadzoneadjust;
-            float stickRotation = gamepad1.right_stick_x * tmp_deadzoneadjust;
-
-            double directionRotation = 0;
-            if (orientationMode == DriveMode.FIELD) {
-                directionRotation = -Pose.normalizeAngle(robot.getImuAngle() - referenceAngle);
-            }
-
-            Pose rotatedPosition = Pose.rotatePosition(stickX, stickY, directionRotation);
-            double rotatedStickX = rotatedPosition.getX();
-            double rotatedStickY = rotatedPosition.getY();
-            double orientation = robot.getImuAngle();
-            robot.writeToTelemetry("IMU DATA (rads)", orientation);
-            robot.writeToTelemetry("Reference Angle (rads)", constants.ROBOT_HEADING);
-
-            double maxPower = Math.max(Math.abs(stickY) + Math.abs(stickX) + Math.abs(stickRotation), 1);
-
-            double leftFrontPower = (rotatedStickY + rotatedStickX + stickRotation) / maxPower * speedNow;
-            double leftBackPower = (rotatedStickY - rotatedStickX + stickRotation) / maxPower * speedNow;
-            double rightFrontPower = (rotatedStickY - rotatedStickX - stickRotation) / maxPower * speedNow;
-            double rightBackPower = (rotatedStickY + rotatedStickX - stickRotation) / maxPower * speedNow;
-
-            robot.writeToTelemetry("LeftMotorPower", leftFrontPower);
-            robot.writeToTelemetry("LeftBackPower", leftBackPower);
-            robot.writeToTelemetry("RightFrontPower", rightFrontPower);
-            robot.writeToTelemetry("RightBackPower", rightBackPower);
-            robot.writeToTelemetry("Current Speed Mode", constants.currentSpeedMode);
-
-            robot.setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
             // we can leave this in base robot because checks occur when adding actions
             List<Action> continued = new ArrayList<>();
             for(Action action : running){
                 if(action.run(new TelemetryPacket())) continued.add(action);
             }
 
-            previousGamepadOne.copy(currentGamepadOne);
-            previousGamepadTwo.copy(currentGamepadTwo);
+            HardwareMechanism.RunData runData = new HardwareMechanism.RunData();
+            runData.currentGamepadOne = currentGamepadOne;
+            runData.previousGamepadOne = previousGamepadOne;
+            runData.currentGamepadTwo = currentGamepadTwo;
+            runData.previousGamepadTwo = previousGamepadTwo;
+            runData.imuAngleRad = robot.getImuAngle();
+
+            for (HardwareMechanism mechanism : mechanisms){
+                mechanism.run(runData, robot::writeToTelemetry);
+            }
 
             // update limelight imu data
             //robot.updateLimelightIMUData();
@@ -190,59 +188,15 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             previousGamepadTwo.copy(currentGamepadTwo);
             running = continued;
             robot.updateTelemetry();
+            sleep(1);
         }
     }
 
-    private boolean specimenClawDown = false;
     private void updateButtons() {
         // put button actions here in this format
 
-        // speed ctrls (gp 1)
-        if (currentGamepadOne.dpad_right && !previousGamepadOne.dpad_right) {
-            constants.currentSpeedMode = constants.SPEEDS.FAST;
-        }
-        if (currentGamepadOne.dpad_up && !previousGamepadOne.dpad_up) {
-            constants.currentSpeedMode = constants.SPEEDS.NORMAL;
-        }
-        if (currentGamepadOne.dpad_left && !previousGamepadOne.dpad_left) {
-            constants.currentSpeedMode = constants.SPEEDS.SLOW;
-        }
-        if (currentGamepadOne.dpad_down && !previousGamepadOne.dpad_down && robot.isDashboardEnabled()) {
-            constants.currentSpeedMode = constants.SPEEDS.CUSTOM_FTC_DASHBOARD;
-        }
-
         // After this, can use SeasonalRobot
         if (typedRobot == null) return;
-
-        // wall specimen grabber ctrl back (gp 2)
-        if (currentGamepadTwo.square && !previousGamepadTwo.square) {
-            if (specimenClawDown){
-                typedRobot.closeSpecimenClaw();
-                sleep(100); // this is unorthodox, but it stops drivers leaving before closed
-                typedRobot.specimenArmToHook();
-                specimenClawDown = false;
-            } else {
-                typedRobot.specimenArmToPickup();
-                sleep(100);
-                typedRobot.openSpecimenClaw();
-                specimenClawDown = true;
-            }
-        }
-
-        // wall specimen grabber ctrl front (gp 2)
-        if (currentGamepadTwo.circle && !previousGamepadTwo.circle) {
-            if (specimenClawDown){
-                typedRobot.closeSpecimenClaw();
-                sleep(100); // this is unorthodox, but it stops drivers leaving before closed
-                typedRobot.specimenArmToHookAuto();
-                specimenClawDown = false;
-            } else {
-                typedRobot.specimenArmToPickupAuto();
-                sleep(100);
-                typedRobot.openSpecimenClaw();
-                specimenClawDown = true;
-            }
-        }
 
         // ascent ctrls (gp2) (rising edge)
         if (!currentGamepadTwo.ps && previousGamepadTwo.ps){
@@ -309,9 +263,59 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     private void updateSwitchState(boolean switchState) {
         if (switchState) {
             // if no switch is attached, fall back to robot mode.
-            orientationMode = DriveMode.ROBOT;
+            orientationMode = HardwareMechanism.DriveMode.ROBOT;
         } else {
-            orientationMode = DriveMode.FIELD;
+            orientationMode = HardwareMechanism.DriveMode.FIELD;
+        }
+    }
+
+    /**
+     * WARNING: BLACK BOX I DON'T UNDERSTAND HERE.
+     * @return The list of all Classes that extend HardwareMechanism and are in the hardware folder.
+     */
+    private List<Class<HardwareMechanism>> getAllHardwareMechanisms(){
+        List<Class<HardwareMechanism>> mechanisms = new ArrayList<>();
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+
+        StandardLocation location = StandardLocation.CLASS_PATH;
+        String packageName = "org/firstinspires/ftc/teamcode/hardware";
+        Set<JavaFileObject.Kind> kinds = new HashSet<>();
+        kinds.add(JavaFileObject.Kind.CLASS);
+        boolean recurse = false;
+
+        Iterable<JavaFileObject> list = null;
+        try {
+            list = fileManager.list(location, packageName,
+                    kinds, recurse);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        for (JavaFileObject classFile : list) {
+            String name = classFile.getName().replaceAll(".*/|[.]class.*","");
+            try {
+                Class<?> clazz = Class.forName(packageName + "." + name);
+                if(clazz.isAssignableFrom(HardwareMechanism.class)){
+                    mechanisms.add((Class<HardwareMechanism>) clazz);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return mechanisms;
+    }
+
+    // fixme hack work around because java bad
+    private static class ContainerClass {
+        private BiConsumer<String, Object> method;
+        public ContainerClass(BiConsumer<String, Object> method){
+            this.method = method;
+        }
+        public BiConsumer<String, Object> getMethod(){
+            return method;
         }
     }
 }
