@@ -352,7 +352,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
 
         // intake automation (gp1)
-        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
+        if (currentGamepadOne.left_bumper && !previousGamepadOne.left_bumper){
             if (intakeRunning){
                 typedRobot.setWristPosition(WristPosition.HIGH);
                 // abort case todo needs work?
