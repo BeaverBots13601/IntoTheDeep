@@ -265,6 +265,7 @@ public class SeasonalRobot extends BaseRobot {
     public void specimenArmToPickup(){ specimenFlipServo.setPosition(1); }
     public void specimenArmToHook(){ specimenFlipServo.setPosition(0.21); }
     public void specimenArmToHang(){ specimenFlipServo.setPosition(.73); }
+    public void specimenArmToHighBasket(){ specimenFlipServo.setPosition(0.45); }
 
     // auto uses flipped positions
     public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.21); }

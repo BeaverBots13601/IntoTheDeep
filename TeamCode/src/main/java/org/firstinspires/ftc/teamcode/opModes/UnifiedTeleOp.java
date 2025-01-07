@@ -326,6 +326,11 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             }
         }
 
+        // high basket angle (gp2)
+        if (allowBaskets && currentGamepadTwo.triangle && !previousGamepadTwo.triangle) {
+            typedRobot.specimenArmToHighBasket();
+        }
+
         // ascent ctrls (gp2) (rising edge)
         if (!currentGamepadTwo.ps && previousGamepadTwo.ps){
             if(ascentMode){
