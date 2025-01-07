@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.opModes.UnifiedTeleOp;
 public class robotTeleOpOpmodeRed extends UnifiedTeleOp {
     @Override
     public void runOpMode(){
-        this.orientationMode = DriveMode.FIELD;
+        this.orientationMode = DriveMode.ROBOT;
         this.configurationMode = RobotConfiguration.FULL;
         this.teamColor = TeamColor.RED;
         super.runOpMode();

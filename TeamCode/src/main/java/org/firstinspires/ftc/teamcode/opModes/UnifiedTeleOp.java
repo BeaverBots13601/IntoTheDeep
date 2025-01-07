@@ -297,7 +297,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         if (typedRobot == null) return;
 
         // wall specimen grabber ctrl back (gp 2)
-        if (currentGamepadTwo.square && !previousGamepadTwo.square) {
+        if (currentGamepadTwo.circle && !previousGamepadTwo.circle) {
             if (specimenClawDown){
                 typedRobot.closeSpecimenClaw();
                 sleep(100); // this is unorthodox, but it stops drivers leaving before closed
@@ -312,7 +312,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
 
         // wall specimen grabber ctrl front (gp 2)
-        if (currentGamepadTwo.circle && !previousGamepadTwo.circle) {
+        if (currentGamepadTwo.square && !previousGamepadTwo.square) {
             if (specimenClawDown){
                 typedRobot.closeSpecimenClaw();
                 sleep(100); // this is unorthodox, but it stops drivers leaving before closed
