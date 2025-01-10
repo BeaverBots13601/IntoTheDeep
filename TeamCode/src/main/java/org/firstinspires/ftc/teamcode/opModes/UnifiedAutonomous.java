@@ -181,7 +181,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action moveSample3Pt2 = moveSample3Pt2Path.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath1 = retrieveSample2Pt2Path.endTrajectory().fresh()
-            .strafeTo(new Vector2d(-3, -32));
+            .strafeTo(new Vector2d(-3, -31.5));
 
         Action humanPlayerToChamber1 = humanPlayerToChamberPath1.build();
 
@@ -191,17 +191,17 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer1 = chamberToHumanPlayerPath1.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath2 = chamberToHumanPlayerPath1.endTrajectory().fresh()
-                .strafeTo(new Vector2d(0, -32));
+                .strafeTo(new Vector2d(0, -31.5));
 
         Action humanPlayerToChamber2 = humanPlayerToChamberPath2.build();
 
         TrajectoryActionBuilder chamberToHumanPlayerPath2 = humanPlayerToChamberPath2.endTrajectory().fresh()
-                .strafeTo(new Vector2d(45, -52));
+                .strafeTo(new Vector2d(45, -51.75));
 
         Action chamberToHumanPlayer2 = chamberToHumanPlayerPath2.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath3 = chamberToHumanPlayerPath2.endTrajectory().fresh()
-                .strafeTo(new Vector2d(3, -32));
+                .strafeTo(new Vector2d(3, -31.5));
 
         Action humanPlayerToChamber3 = humanPlayerToChamberPath3.build();
 
@@ -211,7 +211,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer3 = chamberToHumanPlayerPath3.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath4 = chamberToHumanPlayerPath3.endTrajectory().fresh()
-                .strafeTo(new Vector2d(6, -30));
+                .strafeTo(new Vector2d(6, -31.5));
 
         Action humanPlayerToChamber4 = humanPlayerToChamberPath4.build();
 
@@ -350,7 +350,10 @@ public class UnifiedAutonomous extends LinearOpMode {
                             new InstantAction(robot::specimenArmToHookAuto),
                             moveSample1,
                             moveSample2,
+                            new InstantAction(robot::closeSpecimenClaw),
                             new InstantAction(robot::specimenArmToPickupAuto),
+                            new SleepAction(.1),
+                            new InstantAction(robot::openSpecimenClaw),
                             moveSample2Pt2
                             //moveSample3,
                             //moveSample3Pt2

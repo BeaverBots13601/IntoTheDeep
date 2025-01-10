@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import androidx.annotation.Nullable;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.bosch.BNO055IMUNew;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -12,7 +14,6 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -23,8 +24,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.misc.Pose;
+import org.firstinspires.ftc.teamcode.rr.Drawing;
 import org.firstinspires.ftc.teamcode.vision.AprilTagData;
 import org.firstinspires.ftc.teamcode.vision.AprilTagModule;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
@@ -298,6 +299,17 @@ public class BaseRobot {
         this.opMode.telemetry.update();
         dashboard.sendTelemetryPacket(packet);
         packet = new TelemetryPacket();
+    }
+
+    public void packetToTelemetry(TelemetryPacket pack){
+        dashboard.sendTelemetryPacket(pack);
+    }
+
+    public void processRoadrunnerPose(Pose2d pose){
+        Canvas c = packet.fieldOverlay();
+
+        c.setStroke("#3F51B5");
+        Drawing.drawRobot(c, pose);
     }
 
     public void writeRobotPositionToTelemetry(double x, double y){

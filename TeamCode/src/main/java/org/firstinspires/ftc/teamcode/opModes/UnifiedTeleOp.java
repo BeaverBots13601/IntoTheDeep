@@ -2,6 +2,12 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -15,6 +21,7 @@ import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.WristPosition;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
+import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +65,34 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     // class instead of primitive to allow nullability
     private Integer holdingSpecimenSlidePos = null;
     // we use multiple results to reduce false negatives. 3 works well
-    private final int numResultsToUse = 3;
+    private final int numResultsToUse = 5;
     private List<ColorResult> lastResultsArr = new ArrayList<>(numResultsToUse);
     private boolean pickingUp = false;
     private boolean intakeRunning = false;
     private boolean expellingBad = false;
+    private enum ActionRunning {
+        TO_BAR,
+        TO_PLAYER,
+        STOP
+    }
+    private Action runningTeleonomousAction;
+    private ActionRunning actionRunning;
+    private MecanumDrive drive = null;
+    private static final Pose2d startLoopPose = new Pose2d(38.5, -59.5, -Math.PI / 2);
+    private static final double endLoopPoseY = -41;
+    private static final Vector2d[] endLoopPoses = {
+            new Vector2d(-12, endLoopPoseY),
+            new Vector2d(-10, endLoopPoseY),
+            new Vector2d(-8, endLoopPoseY),
+            new Vector2d(-6, endLoopPoseY),
+            new Vector2d(-4, endLoopPoseY),
+            new Vector2d(-2, endLoopPoseY),
+            new Vector2d(0, endLoopPoseY),
+            new Vector2d(2, endLoopPoseY),
+            new Vector2d(4, endLoopPoseY),
+            new Vector2d(6, endLoopPoseY),
+    };
+    private int posesIndex = 0;
     public void runOpMode() {
         if (configurationMode == RobotConfiguration.RESTRICTED) {
             robot = new BaseRobot(this, constants.WHEEL_DIAMETER, constants.ROBOT_DIAMETER);
@@ -93,6 +123,86 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         while (opModeIsActive()) {
             currentGamepadOne.copy(gamepad1);
             currentGamepadTwo.copy(gamepad2);
+
+            if (drive != null){
+                robot.processRoadrunnerPose(drive.pose);
+            }
+
+            if (runningTeleonomousAction != null){
+                // hijacking the loop
+                if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
+                    // abort
+                    runningTeleonomousAction = null;
+                    drive = null;
+                    previousGamepadOne.copy(currentGamepadOne);
+                    previousGamepadTwo.copy(currentGamepadTwo);
+                    continue;
+                }
+                TelemetryPacket packet = new TelemetryPacket();
+                boolean state = runningTeleonomousAction.run(packet);
+                robot.packetToTelemetry(packet);
+                if (!state){
+                    if (actionRunning == ActionRunning.TO_BAR){
+                        typedRobot.setSpecimenSlideTargetPos(holdingSpecimenSlidePos);
+                        typedRobot.setSpecimenSlidePower(1);
+                        typedRobot.setSpecimenSlideMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    }
+
+                    // done moving; tuning now
+                    while (opModeIsActive() && !(currentGamepadOne.square && !previousGamepadOne.square)){
+                        previousGamepadOne.copy(currentGamepadOne);
+                        previousGamepadTwo.copy(currentGamepadTwo);
+                        currentGamepadOne.copy(gamepad1);
+                        currentGamepadTwo.copy(gamepad2);
+
+                        float stickX = gamepad1.left_stick_x * tmp_deadzoneadjust;
+                        float stickY = -gamepad1.left_stick_y * tmp_deadzoneadjust;
+                        float stickRotation = gamepad1.right_stick_x * tmp_deadzoneadjust;
+
+                        double maxPower = Math.max(Math.abs(stickY) + Math.abs(stickX) + Math.abs(stickRotation), 1);
+
+                        double leftFrontPower = (stickY + stickX + stickRotation) / maxPower * 0.55; // very slow speed
+                        double leftBackPower = (stickY - stickX + stickRotation) / maxPower * 0.55;
+                        double rightFrontPower = (stickY - stickX - stickRotation) / maxPower * 0.55;
+                        double rightBackPower = (stickY + stickX - stickRotation) / maxPower * 0.55;
+
+                        robot.setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                        robot.writeToTelemetry("Specimen Slide At", typedRobot.getSpecimenSlideHeight());
+                        robot.writeToTelemetry("Specimen Slide Target", holdingSpecimenSlidePos);
+                        robot.writeToTelemetry("Former Square", previousGamepadOne.square);
+                        robot.writeToTelemetry("Current Square", currentGamepadOne.square);
+                        robot.updateTelemetry();
+
+                        if (currentGamepadOne.triangle && !previousGamepadOne.triangle){
+                            // abort
+                            runningTeleonomousAction = null;
+                            actionRunning = ActionRunning.STOP;
+                            drive = null;
+                            break;
+                        }
+                    }
+
+                    // done tuning now GO
+                    if (actionRunning == ActionRunning.TO_BAR){
+                        runningTeleonomousAction = chamberHookAndReturnFactory();
+                        actionRunning = ActionRunning.TO_PLAYER;
+                    } else if (actionRunning == ActionRunning.TO_PLAYER) {
+                        runningTeleonomousAction = driveToChamberFactory();
+                        actionRunning = ActionRunning.TO_BAR;
+                    } else {
+                        runningTeleonomousAction = null;
+                        actionRunning = null;
+                    }
+                    holdingSpecimenSlidePos = null;
+                    continue;
+                }
+
+                previousGamepadOne.copy(currentGamepadOne);
+                previousGamepadTwo.copy(currentGamepadTwo);
+                continue;
+            }
+
             updateButtons();
             //updateSwitchState(robot.getSwitchState()); temporarily removed
             robot.writeToTelemetry("Current Orientation Mode", orientationMode);
@@ -240,6 +350,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                                 typedRobot.stopIntake();
                                 typedRobot.setWristPosition(WristPosition.HIGH);
                                 intakeRunning = false;
+                                gamepad1.rumble(500);
                             } else {
                                 // wrong color; reject
                                 expellingBad = true;
@@ -275,7 +386,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
     }
 
-    private boolean specimenClawDown = false;
+    private boolean specimenClawAtPickup = false;
     private void updateButtons() {
         // put button actions here in this format
 
@@ -298,37 +409,47 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // wall specimen grabber ctrl back (gp 2)
         if (currentGamepadTwo.circle && !previousGamepadTwo.circle) {
-            if (specimenClawDown){
+            if (specimenClawAtPickup){
                 typedRobot.closeSpecimenClaw();
                 sleep(100); // this is unorthodox, but it stops drivers leaving before closed
                 typedRobot.specimenArmToHook();
-                specimenClawDown = false;
+                specimenClawAtPickup = false;
             } else {
                 typedRobot.specimenArmToPickup();
                 sleep(100);
                 typedRobot.openSpecimenClaw();
-                specimenClawDown = true;
+                specimenClawAtPickup = true;
             }
         }
 
         // wall specimen grabber ctrl front (gp 2)
         if (currentGamepadTwo.square && !previousGamepadTwo.square) {
-            if (specimenClawDown){
+            if (specimenClawAtPickup){
                 typedRobot.closeSpecimenClaw();
                 sleep(100); // this is unorthodox, but it stops drivers leaving before closed
                 typedRobot.specimenArmToHookAuto();
-                specimenClawDown = false;
+                specimenClawAtPickup = false;
             } else {
                 typedRobot.specimenArmToPickupAuto();
                 sleep(100);
                 typedRobot.openSpecimenClaw();
-                specimenClawDown = true;
+                specimenClawAtPickup = true;
             }
         }
 
         // high basket angle (gp2)
-        if (allowBaskets && currentGamepadTwo.triangle && !previousGamepadTwo.triangle) {
-            typedRobot.specimenArmToHighBasket();
+        if (allowBaskets && currentGamepadTwo.x && !previousGamepadTwo.x) {
+            if (specimenClawAtPickup){
+                typedRobot.closeSpecimenClaw();
+                sleep(100); // this is unorthodox, but it stops drivers leaving before closed
+                typedRobot.specimenArmToHighBasket();
+                specimenClawAtPickup = false;
+            } else {
+                typedRobot.specimenArmToPickupAuto();
+                sleep(100);
+                typedRobot.openSpecimenClaw();
+                specimenClawAtPickup = true;
+            }
         }
 
         // ascent ctrls (gp2) (rising edge)
@@ -381,7 +502,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
 
         // toggle manual verticals (gp2)
-        if (currentGamepadTwo.dpad_left && !previousGamepadTwo.dpad_left){
+        if (currentGamepadTwo.options && !previousGamepadTwo.options){
             manualVerticalMode = !manualVerticalMode;
             if (manualVerticalMode){
                 // reset powers to 0 to avoid state where slides are stuck at power lvl
@@ -415,6 +536,20 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             runningSpecimenSlideAction = typedRobot.roadrunnerRaiseSpecimenSlideToHeight(0.5);
             // Don't require automatic/slide mode to allow post-ascent mode lowering
         }
+
+        // reset (gp 2)
+        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.triangle && !previousGamepadTwo.triangle){
+            if(runningSpecimenSlideAction != null) runningSpecimenSlideAction.interrupt();
+            typedRobot.resetSpecimenSlide();
+        }
+
+        // auto clip (gp2)
+        if (currentGamepadOne.right_bumper && !previousGamepadOne.right_bumper){
+            drive = new MecanumDrive(hardwareMap, new Pose2d(38.5, -59.5, -Math.PI / 2));
+            runningTeleonomousAction = driveToChamberFactory();
+            actionRunning = ActionRunning.TO_BAR;
+            return;
+        }
     }
 
     private void updateSwitchState(boolean switchState) {
@@ -446,5 +581,51 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         }
 
         return out;
+    }
+
+    private Action driveToChamberFactory(){
+        Vector2d target = endLoopPoses[posesIndex];
+        posesIndex++;
+        if (posesIndex == endLoopPoses.length) posesIndex = 0;
+
+        Action humanPlayerToChamber = drive.actionBuilder(drive.pose)
+                .strafeTo(target).build();
+
+        return new SequentialAction(
+                new InstantAction(typedRobot::closeSpecimenClaw),
+                new SleepAction(0.25),
+                new ParallelAction(
+                        new SequentialAction(
+                                new InstantAction(typedRobot::specimenArmToHookAuto),
+                                new SleepAction(.3)
+                        ),
+                        humanPlayerToChamber,
+                        new SequentialAction(
+                                typedRobot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5),
+                                new InstantAction(() -> saveSlideHeight(0.5))
+                        )
+                )
+        );
+    }
+
+    private Action chamberHookAndReturnFactory(){
+        Action chamberToHumanPlayer = drive.actionBuilder(drive.pose)
+                .strafeTo(startLoopPose.position).build();
+
+        return new SequentialAction(
+                typedRobot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
+                new SleepAction(.5),
+                new InstantAction(typedRobot::openSpecimenClaw),
+                new SleepAction(.25),
+                new ParallelAction(
+                        typedRobot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
+                        new InstantAction(typedRobot::specimenArmToPickupAuto),
+                        chamberToHumanPlayer
+                )
+        );
+    }
+
+    private void saveSlideHeight(double num){
+        holdingSpecimenSlidePos = (int) (constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * num);
     }
 }

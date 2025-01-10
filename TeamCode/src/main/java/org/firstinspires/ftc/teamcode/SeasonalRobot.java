@@ -263,12 +263,12 @@ public class SeasonalRobot extends BaseRobot {
     public void openSpecimenClaw(){ specimenClawServo.setPosition(.23); }
 
     public void specimenArmToPickup(){ specimenFlipServo.setPosition(1); }
-    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.21); }
+    public void specimenArmToHook(){ specimenFlipServo.setPosition(0.2); }
     public void specimenArmToHang(){ specimenFlipServo.setPosition(.73); }
     public void specimenArmToHighBasket(){ specimenFlipServo.setPosition(0.45); }
 
     // auto uses flipped positions
-    public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.21); }
+    public void specimenArmToPickupAuto(){ specimenFlipServo.setPosition(.2); }
     public void specimenArmToHookAuto(){ specimenFlipServo.setPosition(.97); }
 
     public enum LimiterState {
@@ -336,5 +336,11 @@ public class SeasonalRobot extends BaseRobot {
 
     public NormalizedRGBA getColorSensorColor(){
         return colorSensor.getNormalizedColors();
+    }
+
+    public void resetSpecimenSlide(){
+        DcMotor.RunMode oldMode = specimenSlideMotor.getMode();
+        specimenSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        specimenSlideMotor.setMode(oldMode);
     }
 }
