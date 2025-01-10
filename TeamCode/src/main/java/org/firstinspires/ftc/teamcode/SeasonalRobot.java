@@ -292,10 +292,10 @@ public class SeasonalRobot extends BaseRobot {
 
     public enum WristPosition {
         // todo needs tuning
-        HIGH(0.29),
+        HIGH(0.53),
         //MID(0.5),
-        LOW(.86),
-        INIT(1);
+        LOW(.09),
+        INIT(0);
 
         private final double position;
 
