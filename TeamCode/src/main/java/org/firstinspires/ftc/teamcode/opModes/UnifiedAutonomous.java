@@ -152,7 +152,7 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         TrajectoryActionBuilder retrieveSample1Path = toChamberPath.endTrajectory().fresh()
             .strafeTo(new Vector2d(-2, -35))
-            .strafeTo(new Vector2d(32, -35)) // strafe
+            .strafeTo(new Vector2d(32.5, -35)) // strafe
             .strafeTo(new Vector2d(45, -10)) // first sample
             .strafeTo(new Vector2d(45, -54)); // push
 
@@ -181,7 +181,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action moveSample3Pt2 = moveSample3Pt2Path.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath1 = retrieveSample2Pt2Path.endTrajectory().fresh()
-            .strafeTo(new Vector2d(-3, -31.5));
+            .strafeTo(new Vector2d(-3, -31.25));
 
         Action humanPlayerToChamber1 = humanPlayerToChamberPath1.build();
 
@@ -191,7 +191,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer1 = chamberToHumanPlayerPath1.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath2 = chamberToHumanPlayerPath1.endTrajectory().fresh()
-                .strafeTo(new Vector2d(0, -31.5));
+                .strafeTo(new Vector2d(0, -31.25));
 
         Action humanPlayerToChamber2 = humanPlayerToChamberPath2.build();
 
@@ -201,7 +201,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer2 = chamberToHumanPlayerPath2.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath3 = chamberToHumanPlayerPath2.endTrajectory().fresh()
-                .strafeTo(new Vector2d(3, -31.5));
+                .strafeTo(new Vector2d(3, -31.25));
 
         Action humanPlayerToChamber3 = humanPlayerToChamberPath3.build();
 
@@ -211,7 +211,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         Action chamberToHumanPlayer3 = chamberToHumanPlayerPath3.build();
 
         TrajectoryActionBuilder humanPlayerToChamberPath4 = chamberToHumanPlayerPath3.endTrajectory().fresh()
-                .strafeTo(new Vector2d(6, -31.5));
+                .strafeTo(new Vector2d(6, -31.25));
 
         Action humanPlayerToChamber4 = humanPlayerToChamberPath4.build();
 
