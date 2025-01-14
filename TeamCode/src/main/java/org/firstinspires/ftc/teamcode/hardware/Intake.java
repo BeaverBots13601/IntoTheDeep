@@ -1,15 +1,22 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
-import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
+import org.firstinspires.ftc.teamcode.HardwareMechanism;
+import org.firstinspires.ftc.teamcode.TeamColor;
+import org.firstinspires.ftc.teamcode.constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +31,7 @@ public class Intake extends HardwareMechanism {
     private CRServo rightRotationServo;
     private RevColorSensorV3 colorSensor;
     private Servo wristServo;
+    private DcMotorEx horizontalArmMotor;
 
     // states
     private boolean pickingUp = false;
@@ -42,6 +50,7 @@ public class Intake extends HardwareMechanism {
             rightRotationServo = hardwareMap.get(CRServo.class, "rightRotationServo");
             colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
             wristServo = setUpServo(hardwareMap, "wristServo");
+            horizontalArmMotor = createDefaultMotor(hardwareMap, "horizontalArmMotor");
         } catch(IllegalArgumentException e) {
             available = false; // tag as broken
             return;
@@ -50,6 +59,7 @@ public class Intake extends HardwareMechanism {
         leftRotationServo.setPower(0);
         rightRotationServo.setDirection(DcMotorSimple.Direction.FORWARD);
         rightRotationServo.setPower(0);
+        horizontalArmMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         teamColor = data.teamColor;
         allowBaskets = data.allowBaskets;
@@ -153,6 +163,11 @@ public class Intake extends HardwareMechanism {
         telemetryFunc.accept("Intake On", intakeRunning);
         telemetryFunc.accept("Intake Expelling", expellingBad);
         telemetryFunc.accept("Intake Intaking", pickingUp);
+
+        // horizontal arm (gp 1)
+        double val = data.currentGamepadOne.right_trigger - data.currentGamepadOne.left_trigger;
+        telemetryFunc.accept("Horizontal Arm Power", val);
+        setHorizontalArmPower(val);
     }
 
     public void reverseIntake(){
@@ -217,4 +232,47 @@ public class Intake extends HardwareMechanism {
     public void setWristPosition(WristPosition pos){
         wristServo.setPosition(pos.getPosition());
     }
+
+    public Action roadrunnerExtendHorizontalSlideToLength(double dist){
+        return new Action() {
+            private boolean initialized = false;
+            private DcMotor.RunMode before;
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (!initialized){
+                    before = horizontalArmMotor.getMode();
+
+                    horizontalArmMotor.setTargetPosition((int) (constants.CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS * dist));
+
+                    horizontalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    horizontalArmMotor.setPower(1);
+
+                    initialized = true;
+                }
+
+                telemetryPacket.put("Motor At", horizontalArmMotor.getCurrentPosition());
+                telemetryPacket.put("Motor Moving To", horizontalArmMotor.getTargetPosition());
+
+                if (horizontalArmMotor.isBusy()) return true;
+
+                horizontalArmMotor.setPower(0);
+
+                horizontalArmMotor.setMode(before);
+
+                return false;
+            }
+        };
+    }
+
+    /**
+     * Changes the speed of the horizontal arm servo. Bear in mind the maximum extension distance before damage.
+     */
+    public void setHorizontalArmPower(double speed){
+        // todo needs some way to set/limit distance
+        horizontalArmMotor.setPower(speed);
+    }
+
+    public boolean horizontalArmFarBoundary() { return horizontalArmMotor.getCurrentPosition() > 2000; }
 }

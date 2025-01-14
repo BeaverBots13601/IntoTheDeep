@@ -21,6 +21,7 @@ public class FlipBar extends HardwareMechanism {
             return;
         }
         specimenArmToPickup();
+        openSpecimenClaw();
         available = true;
     }
 

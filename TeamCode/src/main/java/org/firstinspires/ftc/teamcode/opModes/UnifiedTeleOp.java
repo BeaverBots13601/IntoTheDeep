@@ -31,8 +31,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     private Gamepad previousGamepadOne = new Gamepad();
     private Gamepad currentGamepadTwo = new Gamepad();
     private Gamepad previousGamepadTwo = new Gamepad();
-    private boolean ascentMode = false;
-    private boolean manualVerticalMode = false;
 
     protected enum RobotConfiguration {
         RESTRICTED,
@@ -40,9 +38,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     }
 
     private List<Action> running = new ArrayList<>();
-    private InterruptableAction runningSpecimenSlideAction = null;
-    // class instead of primitive to allow nullability
-    private Integer holdingSpecimenSlidePos = null;
     private ArrayList<HardwareMechanism> mechanisms = new ArrayList<>();
     // we use multiple results to reduce false negatives. 3 works well
     public void runOpMode() {
@@ -87,7 +82,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             updateButtons();
             //updateSwitchState(robot.getSwitchState()); temporarily removed
             robot.writeToTelemetry("Current Orientation Mode", orientationMode);
-            robot.writeToTelemetry("Slides In Manual Mode", manualVerticalMode);
 
             // we can leave this in base robot because checks occur when adding actions
             List<Action> continued = new ArrayList<>();
@@ -121,66 +115,10 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                 continue;
             }
 
-            // horizontal arm (gp 1)
-            double val = currentGamepadOne.right_trigger - currentGamepadOne.left_trigger;
-            robot.writeToTelemetry("Horizontal Arm Power", val);
-            typedRobot.setHorizontalArmPower(val);
-
-            // vertical arm (gp 2)
-            float a = currentGamepadTwo.right_trigger - currentGamepadTwo.left_trigger;
-            robot.writeToTelemetry("Vertical Arm Power", a);
-
-            // specimen slide ctrl (gp2)
-            if (runningSpecimenSlideAction == null){
-                // either in manual or need to hold our height
-                if (manualVerticalMode){
-                    // allow manual controls
-                    if (!ascentMode){
-                        //LimiterState lim = typedRobot.getSpecimenSlideLimiterState();
-                        LimiterState lim = LimiterState.NONE;
-                        robot.writeToTelemetry("Limiter State", lim);
-                        //if(a == 0) a = 0.005f;
-                        typedRobot.setSpecimenSlideMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                        if(lim == LimiterState.LOW) typedRobot.setSpecimenSlidePower(Math.max(0, a));
-                        if(lim == LimiterState.HIGH) typedRobot.setSpecimenSlidePower(Math.min(0, a));
-                        if(lim == LimiterState.NONE) typedRobot.setSpecimenSlidePower(a);
-                    }
-                } else {
-                    if (holdingSpecimenSlidePos != null){
-                        // hold height
-                        typedRobot.setSpecimenSlideTargetPos(holdingSpecimenSlidePos);
-                        typedRobot.setSpecimenSlidePower(1);
-                        typedRobot.setSpecimenSlideMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    } else {
-                        typedRobot.setSpecimenSlidePower(0);
-                    }
-                }
-            } else {
-                // run action. clear if done
-                if(!runningSpecimenSlideAction.run(new TelemetryPacket())) runningSpecimenSlideAction = null;
-                // save our height to keep at
-                holdingSpecimenSlidePos = typedRobot.getSpecimenSlidePos();
-            }
-
-            // rear slide ctrl (gp2)
-            // These limiters are prone to drift maybe? Depends how precise motors are. Investigate
-            // If drivers report issues, look into making a reset button.
-            if (manualVerticalMode && ascentMode) {
-                //LimiterState lim = typedRobot.getRearVerticalSlideLimiterState();
-                LimiterState lim = LimiterState.NONE;
-                robot.writeToTelemetry("Limiter State", lim);
-                // at lower limit: only allow positive speeds
-                if(lim == LimiterState.LOW) typedRobot.setRearVerticalArmPower(Math.max(0, a));
-                // at upper limit: only allow negative speeds
-                if(lim == LimiterState.HIGH) typedRobot.setRearVerticalArmPower(Math.min(0, a));
-                if(lim == LimiterState.NONE) typedRobot.setRearVerticalArmPower(a);
-            }
-
             previousGamepadOne.copy(currentGamepadOne);
             previousGamepadTwo.copy(currentGamepadTwo);
             running = continued;
             robot.updateTelemetry();
-            sleep(1);
         }
     }
 
@@ -207,48 +145,12 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             } else {
                 // enter ascent mode: control change
                 ascentMode = true;
-                manualVerticalMode = true; // no auto controls because slide issue
+                manualVerticalMode = true; // no auto controls because slide issue todo uncomment
                 typedRobot.setSpecimenSlidePower(0);
                 typedRobot.specimenArmToHang();
                 gamepad2.rumble(300);
                 //if (!manualVerticalMode) typedRobot.raiseRearVerticalArmsToHeightAsync(0.5); // need to dial value
             }
-        }
-
-        // toggle manual verticals (gp2)
-        if (currentGamepadTwo.dpad_left && !previousGamepadTwo.dpad_left){
-            manualVerticalMode = !manualVerticalMode;
-            if (manualVerticalMode){
-                // reset powers to 0 to avoid state where slides are stuck at power lvl
-                typedRobot.setRearVerticalArmPower(0);
-                typedRobot.setSpecimenSlidePower(0);
-                if(runningSpecimenSlideAction != null) {
-                    runningSpecimenSlideAction.interrupt();
-                }
-                runningSpecimenSlideAction = null;
-                holdingSpecimenSlidePos = null;
-            }
-        }
-
-        // down (gp 2)
-        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_down && !previousGamepadTwo.dpad_down){
-            if(runningSpecimenSlideAction != null) runningSpecimenSlideAction.interrupt();
-            runningSpecimenSlideAction = typedRobot.roadrunnerRaiseSpecimenSlideToHeight(0);
-            // Don't require automatic/slide mode to allow post-ascent mode lowering
-        }
-
-        // clipped (gp 2)
-        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_up && !previousGamepadTwo.dpad_up){
-            if(runningSpecimenSlideAction != null) runningSpecimenSlideAction.interrupt();
-            runningSpecimenSlideAction = typedRobot.roadrunnerRaiseSpecimenSlideToHeight(0.75);
-            // Don't require automatic/slide mode to allow post-ascent mode lowering
-        }
-
-        // pre-clip (gp 2)
-        if (!manualVerticalMode && !ascentMode && currentGamepadTwo.dpad_right && !previousGamepadTwo.dpad_right){
-            if(runningSpecimenSlideAction != null) runningSpecimenSlideAction.interrupt();
-            runningSpecimenSlideAction = typedRobot.roadrunnerRaiseSpecimenSlideToHeight(0.5);
-            // Don't require automatic/slide mode to allow post-ascent mode lowering
         }
     }
 

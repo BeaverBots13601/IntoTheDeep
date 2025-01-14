@@ -18,10 +18,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
+import org.firstinspires.ftc.teamcode.hardware.FlipBar;
+import org.firstinspires.ftc.teamcode.hardware.Intake;
+import org.firstinspires.ftc.teamcode.hardware.VerticalSlides;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
+import org.firstinspires.ftc.teamcode.HardwareMechanism.InitData;
 
 import java.util.List;
 
@@ -44,12 +48,18 @@ public class UnifiedAutonomous extends LinearOpMode {
     protected Path pathToFollow = Path.STANDARD;
     private PropIdentificationVisualPipeline line;
     private MecanumDrive roadrunnerDrive;
+    private Intake intake;
+    private FlipBar flipBar;
+    private VerticalSlides verticals;
     public void runOpMode(){
         constants.ROBOT_HEADING = 0;
         if(currentLocation == null) currentLocation = Locations.Unknown;
         // Example autonomous code that can be used. Don't be afraid to expand or remodel it as needed
         SeasonalRobot robot = new SeasonalRobot(this);
-        robot.closeSpecimenClaw();
+        intake = new Intake(hardwareMap, new InitData(), robot::writeToTelemetry);
+        flipBar = new FlipBar(hardwareMap, new InitData(), robot::writeToTelemetry);
+        flipBar.closeSpecimenClaw();
+        verticals = new VerticalSlides(hardwareMap, new InitData(), robot::writeToTelemetry);
 
         /* !! This code uses AprilTags to determine where we are starting on the field.
         Note that code segments like these aren't always going to be useful; don't feel obligated to
@@ -141,7 +151,7 @@ public class UnifiedAutonomous extends LinearOpMode {
             }*/
         }
 
-        robot.setWristPosition(SeasonalRobot.WristPosition.INIT);
+        intake.setWristPosition(Intake.WristPosition.INIT);
 
         Pose2d startPose = new Pose2d(24, -60, -Math.PI / 2);
         roadrunnerDrive = new MecanumDrive(hardwareMap, startPose);
@@ -223,90 +233,90 @@ public class UnifiedAutonomous extends LinearOpMode {
         // assumes starting at human player. ends at the chamber
         // JAVA SUCKSSSS. must be like this because of non-reusability (Function requires a lot of scoping work)
         SequentialAction clipSpecimen1 = new SequentialAction(
-            new InstantAction(robot::closeSpecimenClaw),
+            new InstantAction(flipBar::closeSpecimenClaw),
             new SleepAction(0.25),
             new ParallelAction(
                 new SequentialAction(
-                    new InstantAction(robot::specimenArmToHookAuto),
+                    new InstantAction(flipBar::specimenArmToHookAuto),
                     new SleepAction(.3)
                 ),
                 humanPlayerToChamber1,
-                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
+                verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
             ),
-            robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
+            verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
             new SleepAction(.5),
-            new InstantAction(robot::openSpecimenClaw),
+            new InstantAction(flipBar::openSpecimenClaw),
             new SleepAction(.25)
         );
 
         SequentialAction clipSpecimen2 = new SequentialAction(
-                new InstantAction(robot::closeSpecimenClaw),
+                new InstantAction(flipBar::closeSpecimenClaw),
                 new SleepAction(0.25),
                 new ParallelAction(
                         new SequentialAction(
-                                new InstantAction(robot::specimenArmToHookAuto),
+                                new InstantAction(flipBar::specimenArmToHookAuto),
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber2,
-                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
+                        verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
                 ),
-                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
+                verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                 new SleepAction(.5),
-                new InstantAction(robot::openSpecimenClaw),
+                new InstantAction(flipBar::openSpecimenClaw),
                 new SleepAction(.25)
         );
 
         SequentialAction clipSpecimen3 = new SequentialAction(
-                new InstantAction(robot::closeSpecimenClaw),
+                new InstantAction(flipBar::closeSpecimenClaw),
                 new SleepAction(0.25),
                 new ParallelAction(
                         new SequentialAction(
-                                new InstantAction(robot::specimenArmToHookAuto),
+                                new InstantAction(flipBar::specimenArmToHookAuto),
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber3,
-                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
+                        verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
                 ),
-                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
+                verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                 new SleepAction(.5),
-                new InstantAction(robot::openSpecimenClaw),
+                new InstantAction(flipBar::openSpecimenClaw),
                 new SleepAction(.25)
         );
 
         SequentialAction clipSpecimen4 = new SequentialAction(
-                new InstantAction(robot::closeSpecimenClaw),
+                new InstantAction(flipBar::closeSpecimenClaw),
                 new SleepAction(0.25),
                 new ParallelAction(
                         new SequentialAction(
-                                new InstantAction(robot::specimenArmToHookAuto),
+                                new InstantAction(flipBar::specimenArmToHookAuto),
                                 new SleepAction(.3)
                         ),
                         humanPlayerToChamber4,
-                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
+                        verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5)
                 ),
                 new SleepAction(.25),
-                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
+                verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                 new SleepAction(.5),
-                new InstantAction(robot::openSpecimenClaw),
+                new InstantAction(flipBar::openSpecimenClaw),
                 new SleepAction(.25)
         );
 
         ParallelAction resetForNextSpecimen1 = new ParallelAction(
             chamberToHumanPlayer1,
-            robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
-            new InstantAction(robot::specimenArmToPickupAuto)
+            verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
+            new InstantAction(flipBar::specimenArmToPickupAuto)
         );
 
         ParallelAction resetForNextSpecimen2 = new ParallelAction(
                 chamberToHumanPlayer2,
-                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
-                new InstantAction(robot::specimenArmToPickupAuto)
+                verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
+                new InstantAction(flipBar::specimenArmToPickupAuto)
         );
 
         ParallelAction resetForNextSpecimen3 = new ParallelAction(
                 chamberToHumanPlayer3,
-                robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
-                new InstantAction(robot::specimenArmToPickupAuto)
+                verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
+                new InstantAction(flipBar::specimenArmToPickupAuto)
         );
 
         TrajectoryActionBuilder spinToIntakePath = humanPlayerToChamberPath3.endTrajectory().fresh()
@@ -320,7 +330,7 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         waitForStart(); // setup done actually do things
 
-        robot.setWristPosition(SeasonalRobot.WristPosition.LOW);
+        intake.setWristPosition(Intake.WristPosition.LOW);
 
         switch(currentLocation){
             case RedFar:
@@ -333,29 +343,29 @@ public class UnifiedAutonomous extends LinearOpMode {
                 Actions.runBlocking(new SequentialAction(
                     new ParallelAction(
                         toChamber,
-                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5),
+                        verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.5),
                         new SequentialAction(
-                            new InstantAction(robot::closeSpecimenClaw),
-                            new InstantAction(robot::specimenArmToHookAuto),
+                            new InstantAction(flipBar::closeSpecimenClaw),
+                            new InstantAction(flipBar::specimenArmToHookAuto),
                             new SleepAction(.3) // wait for movement
                         )
                     ),
-                    robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
+                    verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0.8),
                     new SleepAction(.5),
-                    new InstantAction(robot::openSpecimenClaw),
+                    new InstantAction(flipBar::openSpecimenClaw),
                     new SleepAction(.25),
                     new ParallelAction(
                         // time to go move samples
                         new SequentialAction(
-                            new InstantAction(robot::specimenArmToHookAuto),
+                            new InstantAction(flipBar::specimenArmToHookAuto),
                             moveSample1,
                             moveSample2,
-                            new InstantAction(robot::specimenArmToPickupAuto),
+                            new InstantAction(flipBar::specimenArmToPickupAuto),
                             moveSample2Pt2
                             //moveSample3,
                             //moveSample3Pt2
                         ), // this puts us at human player spot
-                        robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0)
+                        verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0)
                     ),
                     // do specimens
                     clipSpecimen1,
@@ -370,13 +380,13 @@ public class UnifiedAutonomous extends LinearOpMode {
                     new ParallelAction(
                         //inChamberToPark,
                         new SequentialAction(
-                            new InstantAction(() -> robot.setWristPosition(SeasonalRobot.WristPosition.HIGH)),
+                            new InstantAction(() -> intake.setWristPosition(Intake.WristPosition.HIGH)),
                             spinToIntake,
-                            robot.roadrunnerExtendHorizontalSlideToLength(0.5)
+                            intake.roadrunnerExtendHorizontalSlideToLength(0.5)
                         ),
                         new SequentialAction(
-                            robot.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
-                            new InstantAction(robot::specimenArmToPickup),
+                            verticals.roadrunnerRaiseSpecimenSlideToHeightBugged(0),
+                            new InstantAction(flipBar::specimenArmToPickup),
                             new SleepAction(0.3)
                         )
                     )
