@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.HardwareMechanism;
+import org.firstinspires.ftc.teamcode.HardwareMechanismClassManager;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
@@ -70,7 +71,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         data.dashboardEnabled = robot.isDashboardEnabled();
 
         // get all the classes and instantiate & keep the ones matching HardwareMechanism
-        List<Class<HardwareMechanism>> classes = getAllHardwareMechanisms();
+        List<Class<HardwareMechanism>> classes = HardwareMechanismClassManager.getMechanisms();
         for (Class<HardwareMechanism> clazz : classes){
             try {
                 HardwareMechanism mech = clazz.getDeclaredConstructor().newInstance(hardwareMap, data, new ContainerClass(robot::writeToTelemetry).getMethod());
@@ -267,45 +268,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         } else {
             orientationMode = HardwareMechanism.DriveMode.FIELD;
         }
-    }
-
-    /**
-     * WARNING: BLACK BOX I DON'T UNDERSTAND HERE.
-     * @return The list of all Classes that extend HardwareMechanism and are in the hardware folder.
-     */
-    private List<Class<HardwareMechanism>> getAllHardwareMechanisms(){
-        List<Class<HardwareMechanism>> mechanisms = new ArrayList<>();
-
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
-
-        StandardLocation location = StandardLocation.CLASS_PATH;
-        String packageName = "org/firstinspires/ftc/teamcode/hardware";
-        Set<JavaFileObject.Kind> kinds = new HashSet<>();
-        kinds.add(JavaFileObject.Kind.CLASS);
-        boolean recurse = false;
-
-        Iterable<JavaFileObject> list = null;
-        try {
-            list = fileManager.list(location, packageName,
-                    kinds, recurse);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        for (JavaFileObject classFile : list) {
-            String name = classFile.getName().replaceAll(".*/|[.]class.*","");
-            try {
-                Class<?> clazz = Class.forName(packageName + "." + name);
-                if(clazz.isAssignableFrom(HardwareMechanism.class)){
-                    mechanisms.add((Class<HardwareMechanism>) clazz);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return mechanisms;
     }
 
     // fixme hack work around because java bad
