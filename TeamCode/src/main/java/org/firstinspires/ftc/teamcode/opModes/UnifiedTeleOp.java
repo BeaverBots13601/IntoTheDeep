@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.HardwareMechanism;
@@ -74,7 +75,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         List<Class<HardwareMechanism>> classes = HardwareMechanismClassManager.getMechanisms();
         for (Class<HardwareMechanism> clazz : classes){
             try {
-                HardwareMechanism mech = clazz.getDeclaredConstructor().newInstance(hardwareMap, data, new ContainerClass(robot::writeToTelemetry).getMethod());
+                HardwareMechanism mech = clazz.getDeclaredConstructor(HardwareMap.class, HardwareMechanism.InitData.class, BiConsumer.class).newInstance(hardwareMap, data, (BiConsumer<String, Object>) robot::writeToTelemetry);
                 if (mech.available) mechanisms.add(mech);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -267,17 +268,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             orientationMode = HardwareMechanism.DriveMode.ROBOT;
         } else {
             orientationMode = HardwareMechanism.DriveMode.FIELD;
-        }
-    }
-
-    // fixme hack work around because java bad
-    private static class ContainerClass {
-        private BiConsumer<String, Object> method;
-        public ContainerClass(BiConsumer<String, Object> method){
-            this.method = method;
-        }
-        public BiConsumer<String, Object> getMethod(){
-            return method;
         }
     }
 }

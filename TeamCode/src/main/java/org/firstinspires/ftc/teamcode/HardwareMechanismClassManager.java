@@ -32,7 +32,7 @@ public class HardwareMechanismClassManager implements ClassFilter {
     }
 
     public void filterAllClassesStart() {
-        mechanisms = null; // todo is this.. fine?
+        mechanisms = new ArrayList<>();
     }
     public void filterOnBotJavaClassesStart() {}
     public void filterExternalLibrariesClassesStart() {}
