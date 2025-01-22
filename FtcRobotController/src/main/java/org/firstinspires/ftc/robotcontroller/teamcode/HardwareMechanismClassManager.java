@@ -1,10 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.robotcontroller.teamcode;
 
 import android.content.Context;
 
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.ftccommon.external.OnCreate;
 import org.firstinspires.ftc.robotcore.internal.opmode.ClassFilter;
 import org.firstinspires.ftc.robotcore.internal.opmode.ClassManager;
 
@@ -26,8 +25,8 @@ public class HardwareMechanismClassManager implements ClassFilter {
         return mechanisms;
     }
 
-    @OnCreate
-    private static void registerClassFilter(Context context){
+    //@OnCreate
+    public static void registerClassFilter(Context context){
         ClassManager.getInstance().registerFilter(new HardwareMechanismClassManager());
     }
 

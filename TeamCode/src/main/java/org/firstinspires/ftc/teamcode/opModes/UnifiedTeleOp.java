@@ -8,26 +8,16 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.BaseRobot;
-import org.firstinspires.ftc.teamcode.HardwareMechanism;
-import org.firstinspires.ftc.teamcode.HardwareMechanismClassManager;
-import org.firstinspires.ftc.teamcode.misc.Pose;
-import org.firstinspires.ftc.teamcode.constants;
+import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
+import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanismClassManager;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
 import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
-import org.firstinspires.ftc.teamcode.TeamColor;
+import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
-
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
 
 public abstract class UnifiedTeleOp extends LinearOpMode {
     /** This field may be immediately changed by the switch state update. */

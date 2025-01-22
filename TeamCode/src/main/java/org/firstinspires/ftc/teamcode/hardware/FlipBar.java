@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.HardwareMechanism;
+import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 
 import java.util.function.BiConsumer;
 

@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode;
-
-import androidx.annotation.Nullable;
+package org.firstinspires.ftc.robotcontroller.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -8,8 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.teamcode.hardware.DriveTrain;
 
 import java.util.function.BiConsumer;
 
@@ -37,7 +33,7 @@ public abstract class HardwareMechanism {
     abstract public void run(RunData data, BiConsumer<String, Object> telemetryFunc);
 
     // static utility members
-    protected static Servo setUpServo(HardwareMap hardwareMap, String servoName) {
+    public static Servo setUpServo(HardwareMap hardwareMap, String servoName) {
         Servo servo = hardwareMap.get(Servo.class, servoName);
         return servo;
     }
@@ -46,7 +42,7 @@ public abstract class HardwareMechanism {
      * Creates a default motor with the settings 'RUN_USING_ENCODER' and 'FLOAT on zero power'.
      * Reverses if name includes left.
      */
-    protected static DcMotorEx createDefaultMotor(HardwareMap hardwareMap, String motorName) {
+    public static DcMotorEx createDefaultMotor(HardwareMap hardwareMap, String motorName) {
         DcMotorEx motor = hardwareMap.get(DcMotorEx.class, motorName);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
