@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.HardwareMechanism;
+import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.teamcode.LimiterState;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;

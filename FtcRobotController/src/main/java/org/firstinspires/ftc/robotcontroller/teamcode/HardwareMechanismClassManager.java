@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.internal.opmode.ClassFilter;
 import org.firstinspires.ftc.robotcore.internal.opmode.ClassManager;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +38,7 @@ public class HardwareMechanismClassManager implements ClassFilter {
     public void filterExternalLibrariesClassesStart() {}
 
     public void filterClass(Class clazz) {
-        // todo does this filtering work?
-        if (HardwareMechanism.class.isAssignableFrom(clazz)) {
-
+        if (HardwareMechanism.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
             mechanisms.add((Class<HardwareMechanism>) clazz);
         }
     }

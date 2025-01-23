@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
 import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
-import org.firstinspires.ftc.teamcode.HardwareMechanism.InitData;
+import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism.InitData;
 
 import java.util.List;
 

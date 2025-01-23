@@ -10,8 +10,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanismClassManager;
+import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
-import org.firstinspires.ftc.teamcode.SeasonalRobot.LimiterState;
+import org.firstinspires.ftc.teamcode.LimiterState;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
 
@@ -130,7 +131,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // ascent ctrls (gp2) (rising edge)
         if (!currentGamepadTwo.ps && previousGamepadTwo.ps){
-            if(ascentMode){
+            if(Globals.ascentMode){
                 typedRobot.setRearVerticalArmPower(-0.6); // climb
                 while (opModeIsActive() && gamepad2.ps); // wait until button not pressed
                 while (opModeIsActive()) {
@@ -139,13 +140,13 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                     typedRobot.updateTelemetry();
                 } // run until abort
                 typedRobot.setRearVerticalArmPower(0);
-                ascentMode = false;
-                manualVerticalMode = false;
+                Globals.ascentMode = false;
+                Globals.manualVerticalMode = false;
                 while (opModeIsActive() && gamepad2.ps);
             } else {
                 // enter ascent mode: control change
-                ascentMode = true;
-                manualVerticalMode = true; // no auto controls because slide issue todo uncomment
+                Globals.ascentMode = true;
+                Globals.manualVerticalMode = true; // no auto controls because slide issue todo uncomment
                 typedRobot.setSpecimenSlidePower(0);
                 typedRobot.specimenArmToHang();
                 gamepad2.rumble(300);

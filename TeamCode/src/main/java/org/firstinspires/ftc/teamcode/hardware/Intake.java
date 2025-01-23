@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.HardwareMechanism;
-import org.firstinspires.ftc.teamcode.TeamColor;
+import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
+import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
 import org.firstinspires.ftc.teamcode.constants;
 
 import java.util.ArrayList;
