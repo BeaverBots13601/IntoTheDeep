@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import androidx.annotation.Nullable;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMUNew;
@@ -10,7 +8,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -30,16 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
-    TODO (maybe):
-        - Have robot and gamepadManager class
-        - In Robot, make manager (pub var) = gamepadManager (gamepadManager  implements gamepadManagerInterface)
-        - Make specializedRobot and specializedGamepadManager
-            - specializedGamepadManager extends gamepadManager implements gamepadManagerInterface
-        - Robots manage their own gamepads, interchangeable-ish
-        - All the same interface so can do robot.controller.update() universally
-        - Allows differentiation
-        - Photos in drive: 24-25 season/Programming/lightning mcqueen
-
     TODO: Build web-tool that allows robot configuration i.e driver station (ftc-dash)
 
     TODO:
@@ -54,8 +41,6 @@ public class BaseRobot {
     private TelemetryPacket packet = new TelemetryPacket();
     private AprilTagModule aprilTagModule;
     private PropIdentificationVisualPipeline propID;
-    @Nullable
-    private DigitalChannel switch_ = null;
 
     private final Limelight3A limelight = null;
 
@@ -90,11 +75,6 @@ public class BaseRobot {
 
         writeToTelemetry(">", "Hardware Initialized");
         updateTelemetry();
-
-        try {
-            switch_ = opmode.hardwareMap.get(DigitalChannel.class, "switch");
-        } catch (Exception ignored){}
-
 
         //limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
         //limelight.pipelineSwitch(0);
@@ -209,12 +189,5 @@ public class BaseRobot {
 
     public boolean isDashboardEnabled(){
         return dashboard.isEnabled();
-    }
-
-    /**
-     * Returns the switch's state. Note that if a switch is not attached (or not configured), this will always return true.
-     */
-    public boolean getSwitchState(){
-        return switch_ == null ? true : switch_.getState();
     }
 }

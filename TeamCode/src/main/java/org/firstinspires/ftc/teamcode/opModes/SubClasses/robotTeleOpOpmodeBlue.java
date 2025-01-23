@@ -13,7 +13,6 @@ public class robotTeleOpOpmodeBlue extends UnifiedTeleOp {
     @Override
     public void runOpMode(){
         this.orientationMode = HardwareMechanism.DriveMode.FIELD;
-        this.configurationMode = RobotConfiguration.FULL;
         this.teamColor = TeamColor.BLUE;
         super.runOpMode();
     }

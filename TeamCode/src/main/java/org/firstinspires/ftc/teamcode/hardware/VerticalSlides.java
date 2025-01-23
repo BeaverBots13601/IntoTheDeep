@@ -14,7 +14,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.teamcode.LimiterState;
-import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 
 import java.util.function.BiConsumer;
@@ -23,6 +22,11 @@ import java.util.function.BiConsumer;
 // should be separated. however, that introduces issues with global state management and who
 // decides what that state is. all because of one little switch... not dealing with that right now
 public class VerticalSlides extends HardwareMechanism {
+    // magic numbers
+    public static final int CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS = 4000;
+    public static final int CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS = 2200;
+
+    // hardware
     private DcMotorEx leftRearVerticalArmMotor;
     private DcMotorEx rightRearVerticalArmMotor;
     private DcMotorEx specimenSlideMotor;
@@ -151,8 +155,8 @@ public class VerticalSlides extends HardwareMechanism {
                 if(!initialized){
                     before = leftRearVerticalArmMotor.getMode();
 
-                    rightRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
-                    leftRearVerticalArmMotor.setTargetPosition((int) (constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
+                    rightRearVerticalArmMotor.setTargetPosition((int) (CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
+                    leftRearVerticalArmMotor.setTargetPosition((int) (CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS * height));
 
                     leftRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     rightRearVerticalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -186,13 +190,13 @@ public class VerticalSlides extends HardwareMechanism {
 
     public LimiterState getSpecimenSlideLimiterState(){
         if(specimenSlideMotor.getCurrentPosition() < 10) return LimiterState.NEAR; // negative: reversed
-        if(specimenSlideMotor.getCurrentPosition() > constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS - 10) return LimiterState.FAR;
+        if(specimenSlideMotor.getCurrentPosition() > CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS - 10) return LimiterState.FAR;
         return LimiterState.NONE;
     }
 
     public LimiterState getRearVerticalSlideLimiterState(){
         if(rightRearVerticalArmMotor.getCurrentPosition() < 10) return LimiterState.NEAR; // negative: reversed
-        if(rightRearVerticalArmMotor.getCurrentPosition() > constants.CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS - 10) return LimiterState.FAR;
+        if(rightRearVerticalArmMotor.getCurrentPosition() > CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS - 10) return LimiterState.FAR;
         return LimiterState.NONE;
     }
 
@@ -212,8 +216,11 @@ public class VerticalSlides extends HardwareMechanism {
         return specimenSlideMotor.getCurrentPosition();
     }
 
+    /**
+     * @return The current height of the slide, [0, 1] as a percentage of its maximum.
+     */
     public double getSpecimenSlideHeight(){
-        return (double) specimenSlideMotor.getCurrentPosition() / constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS;
+        return (double) specimenSlideMotor.getCurrentPosition() / CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS;
     }
 
     public InterruptableAction roadrunnerRaiseSpecimenSlideToHeight(double height){
@@ -225,7 +232,7 @@ public class VerticalSlides extends HardwareMechanism {
                 if (!initialized){
                     before = specimenSlideMotor.getMode();
 
-                    specimenSlideMotor.setTargetPosition((int) (constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * height));
+                    specimenSlideMotor.setTargetPosition((int) (CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * height));
 
                     specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -267,7 +274,7 @@ public class VerticalSlides extends HardwareMechanism {
                 if (!initialized){
                     before = specimenSlideMotor.getMode();
 
-                    specimenSlideMotor.setTargetPosition((int) (constants.CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * height));
+                    specimenSlideMotor.setTargetPosition((int) (CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS * height));
 
                     specimenSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 

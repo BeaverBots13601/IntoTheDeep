@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.SeasonalRobot;
+import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.teamcode.hardware.FlipBar;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.VerticalSlides;
@@ -55,7 +55,7 @@ public class UnifiedAutonomous extends LinearOpMode {
         constants.ROBOT_HEADING = 0;
         if(currentLocation == null) currentLocation = Locations.Unknown;
         // Example autonomous code that can be used. Don't be afraid to expand or remodel it as needed
-        SeasonalRobot robot = new SeasonalRobot(this);
+        BaseRobot robot = new BaseRobot(this);
         intake = new Intake(hardwareMap, new InitData(), robot::writeToTelemetry);
         flipBar = new FlipBar(hardwareMap, new InitData(), robot::writeToTelemetry);
         flipBar.closeSpecimenClaw();

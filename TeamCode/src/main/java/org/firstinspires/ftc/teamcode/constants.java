@@ -5,7 +5,6 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class constants {
-    public static final double ENCODER_TICKS = 537.70; // changes if motor changes
     public static final int TELEMETRY_MS_TRANSMISSION_INTERVAL = 25; // no clue what this does tbh
 
     // This speed is designed to be set dynamically within FTC Dashboard.
@@ -32,16 +31,6 @@ public class constants {
      */
     public static double COLOR_UNKNOWN_THRESHOLD_PERCENT = 0.1;
     public static double DETECTION_BOX_OFFSET_SIDES_PX = 128;
-
-    public static final double ROBOT_CIRCUMFERENCE = 98.19;
-    // these may need to be recalibrated eventually
-    public static final double WHEEL_DIAMETER = 3.5;
-    public static final double ROBOT_DIAMETER = 13.75;
-
-    public static final int CALIBRATED_REAR_VERTICALS_HEIGHT_TICKS = 4000;
-    public static final int CALIBRATED_SPECIMEN_SLIDE_HEIGHT_TICKS = 2200;
-    public static final int CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS = 1950;
-
 
     // disable roadrunner tuning opmodes
     public static final boolean DISABLE_TUNING_OPMODES = true;

@@ -16,7 +16,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
-import org.firstinspires.ftc.teamcode.constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.function.BiConsumer;
 public class Intake extends HardwareMechanism {
     // magic numbers
     private static final int numResultsToUse = 3;
+    private static final int CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS = 1950;
 
     // hardware
     private CRServo leftRotationServo;
@@ -243,7 +243,7 @@ public class Intake extends HardwareMechanism {
                 if (!initialized){
                     before = horizontalArmMotor.getMode();
 
-                    horizontalArmMotor.setTargetPosition((int) (constants.CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS * dist));
+                    horizontalArmMotor.setTargetPosition((int) (CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS * dist));
 
                     horizontalArmMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
