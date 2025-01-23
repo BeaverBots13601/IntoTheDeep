@@ -42,29 +42,6 @@ public class BaseRobot {
     private AprilTagModule aprilTagModule;
     private PropIdentificationVisualPipeline propID;
 
-    private final Limelight3A limelight = null;
-
-    public ArrayList<AprilTagData> getLastLimelightAprilTags(){
-        ArrayList<AprilTagData> out = new ArrayList<>();
-
-        limelight.getLatestResult().getFiducialResults().forEach((LLResultTypes.FiducialResult a) -> out.add(new AprilTagData(a.getFiducialId(), a.getTargetPoseRobotSpace().getPosition().z, 0)));
-
-        return out;
-    }
-
-    // todo this limelight stuff shouldn't be here, move back
-    public List<LLResultTypes.FiducialResult> getLastLimelightAprilTagsRaw(){
-        return limelight.getLatestResult().getFiducialResults();
-    }
-
-    public void updateLimelightIMUData(){
-        limelight.updateRobotOrientation(getImuAngle());
-    }
-
-    public Pose3D getLimelightPositionalData() {
-        return limelight.getLatestResult().getBotpose_MT2();
-    }
-
     public BaseRobot(LinearOpMode opmode) {
         this.opMode = opmode;
         this.opMode.telemetry.setMsTransmissionInterval(constants.TELEMETRY_MS_TRANSMISSION_INTERVAL);
@@ -75,10 +52,6 @@ public class BaseRobot {
 
         writeToTelemetry(">", "Hardware Initialized");
         updateTelemetry();
-
-        //limelight = opmode.hardwareMap.get(Limelight3A.class, "limelight");
-        //limelight.pipelineSwitch(0);
-        //limelight.start();
     }
 
     private IMU createImu() {
