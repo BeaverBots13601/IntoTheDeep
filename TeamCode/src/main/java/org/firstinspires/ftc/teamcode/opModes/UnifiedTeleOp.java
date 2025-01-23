@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opModes;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -12,8 +11,6 @@ import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanismClassManager;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.teamcode.SeasonalRobot;
-import org.firstinspires.ftc.teamcode.LimiterState;
-import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
 
 import java.util.ArrayList;
@@ -74,7 +71,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         waitForStart();
         for (HardwareMechanism mechanism : mechanisms){
-            mechanism.start(robot::writeToTelemetry);
+            mechanism.start();
         }
 
         while (opModeIsActive()) {
@@ -98,7 +95,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             runData.imuAngleRad = robot.getImuAngle();
 
             for (HardwareMechanism mechanism : mechanisms){
-                mechanism.run(runData, robot::writeToTelemetry);
+                mechanism.run(runData);
             }
 
             // update limelight imu data
@@ -146,7 +143,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             } else {
                 // enter ascent mode: control change
                 Globals.ascentMode = true;
-                Globals.manualVerticalMode = true; // no auto controls because slide issue todo uncomment
+                Globals.manualVerticalMode = true; // no auto controls because slide issue
                 typedRobot.setSpecimenSlidePower(0);
                 typedRobot.specimenArmToHang();
                 gamepad2.rumble(300);

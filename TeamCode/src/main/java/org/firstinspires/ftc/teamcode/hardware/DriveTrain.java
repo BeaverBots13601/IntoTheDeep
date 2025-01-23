@@ -40,11 +40,11 @@ public class DriveTrain extends HardwareMechanism {
         available = true;
     }
 
-    public void start(BiConsumer<String, Object> telemetryFunc) {
+    public void start() {
 
     }
 
-    public void run(RunData data, BiConsumer<String, Object> telemetryFunc) {
+    public void run(RunData data) {
         double speedNow = currentSpeedMode.getNumericalSpeed();
 
         int tmp_deadzoneadjust = 2;
@@ -62,8 +62,8 @@ public class DriveTrain extends HardwareMechanism {
         double rotatedStickX = rotatedPosition.getX();
         double rotatedStickY = rotatedPosition.getY();
         double orientation = data.imuAngleRad;
-        telemetryFunc.accept("IMU DATA (rads)", orientation);
-        telemetryFunc.accept("Reference Angle (rads)", constants.ROBOT_HEADING);
+        telemetry.accept("IMU DATA (rads)", orientation);
+        telemetry.accept("Reference Angle (rads)", constants.ROBOT_HEADING);
 
         double maxPower = Math.max(Math.abs(stickY) + Math.abs(stickX) + Math.abs(stickRotation), 1);
 
@@ -72,11 +72,11 @@ public class DriveTrain extends HardwareMechanism {
         double rightFrontPower = (rotatedStickY - rotatedStickX - stickRotation) / maxPower * speedNow;
         double rightBackPower = (rotatedStickY + rotatedStickX - stickRotation) / maxPower * speedNow;
 
-        telemetryFunc.accept("LeftMotorPower", leftFrontPower);
-        telemetryFunc.accept("LeftBackPower", leftBackPower);
-        telemetryFunc.accept("RightFrontPower", rightFrontPower);
-        telemetryFunc.accept("RightBackPower", rightBackPower);
-        telemetryFunc.accept("Current Speed Mode", currentSpeedMode);
+        telemetry.accept("LeftMotorPower", leftFrontPower);
+        telemetry.accept("LeftBackPower", leftBackPower);
+        telemetry.accept("RightFrontPower", rightFrontPower);
+        telemetry.accept("RightBackPower", rightBackPower);
+        telemetry.accept("Current Speed Mode", currentSpeedMode);
 
         setDriveMotors(new double[]{leftFrontPower, leftBackPower, rightFrontPower, rightBackPower}, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 

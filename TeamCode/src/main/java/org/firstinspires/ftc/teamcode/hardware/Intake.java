@@ -76,12 +76,12 @@ public class Intake extends HardwareMechanism {
         available = true; // tag as working
     }
 
-    public void start(BiConsumer<String, Object> telemetryFunc) {
+    public void start() {
         // intake code expects starting high
         setWristPosition(WristPosition.HIGH);
     }
 
-    public void run(RunData data, BiConsumer<String, Object> telemetryFunc) {
+    public void run(RunData data) {
         if (intakeRunning){
             if (pickingUp){
                 if (getColorSensorProximity(DistanceUnit.MM) < 25) { // have one
@@ -156,17 +156,17 @@ public class Intake extends HardwareMechanism {
         ColorResult lastResult = processColorSensorResult(getColorSensorColor());
         lastResultsArr.remove(0);
         lastResultsArr.add(lastResult);
-        telemetryFunc.accept("Color Sensor Color", lastResult.highestColor);
-        telemetryFunc.accept("Color Sensor Strength", lastResult.highestColorValue);
+        telemetry.accept("Color Sensor Color", lastResult.highestColor);
+        telemetry.accept("Color Sensor Strength", lastResult.highestColorValue);
 
-        telemetryFunc.accept("Color Sensor Prox", getColorSensorProximity(DistanceUnit.MM));
-        telemetryFunc.accept("Intake On", intakeRunning);
-        telemetryFunc.accept("Intake Expelling", expellingBad);
-        telemetryFunc.accept("Intake Intaking", pickingUp);
+        telemetry.accept("Color Sensor Prox", getColorSensorProximity(DistanceUnit.MM));
+        telemetry.accept("Intake On", intakeRunning);
+        telemetry.accept("Intake Expelling", expellingBad);
+        telemetry.accept("Intake Intaking", pickingUp);
 
         // horizontal arm (gp 1)
         double val = data.currentGamepadOne.right_trigger - data.currentGamepadOne.left_trigger;
-        telemetryFunc.accept("Horizontal Arm Power", val);
+        telemetry.accept("Horizontal Arm Power", val);
         setHorizontalArmPower(val);
     }
 

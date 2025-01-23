@@ -11,28 +11,31 @@ import java.util.function.BiConsumer;
 
 public abstract class HardwareMechanism {
     public boolean available;
+    protected BiConsumer<String, Object> telemetry;
     /**
      * WARNING: After using the constructor, you MUST check the field 'available'. Treat a false value as null.
      *
      * @param data          Starting data for the hardware.
      * @param telemetryFunc The telemetry function, with the parameters Caption, Data.
      */
-    public HardwareMechanism(HardwareMap hardwareMap, InitData data, BiConsumer<String, Object> telemetryFunc){}
+    public HardwareMechanism(HardwareMap hardwareMap, InitData data, BiConsumer<String, Object> telemetryFunc){
+        telemetry = telemetryFunc;
+    }
 
     /**
      * Call after doing waitForStart(). Allows the class to do setup that can only legally be done after starting.
-     * @param telemetryFunc The telemetry function, with the parameters Caption, Data.
      */
-    abstract public void start(BiConsumer<String, Object> telemetryFunc);
+    abstract public void start();
 
     /**
      * The main loop function, meant to be called every TeleOp loop.
+     *
      * @param data Relevant data for the class.
-     * @param telemetryFunc The telemetry function, with the parameters Caption, Data.
      */
-    abstract public void run(RunData data, BiConsumer<String, Object> telemetryFunc);
+    abstract public void run(RunData data);
 
     // static utility members
+    // todo make me protected once refactor complete
     public static Servo setUpServo(HardwareMap hardwareMap, String servoName) {
         Servo servo = hardwareMap.get(Servo.class, servoName);
         return servo;

@@ -25,11 +25,11 @@ public class FlipBar extends HardwareMechanism {
         available = true;
     }
 
-    public void start(BiConsumer<String, Object> telemetryFunc) {
+    public void start() {
 
     }
 
-    public void run(RunData data, BiConsumer<String, Object> telemetryFunc) {
+    public void run(RunData data) {
         // wall specimen grabber ctrl back (gp 2)
         if (data.currentGamepadTwo.square && !data.previousGamepadTwo.square) {
             if (specimenClawDown){

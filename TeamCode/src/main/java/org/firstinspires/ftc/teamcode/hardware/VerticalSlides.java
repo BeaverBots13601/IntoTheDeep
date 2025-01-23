@@ -45,15 +45,14 @@ public class VerticalSlides extends HardwareMechanism {
         available = true;
     }
     
-    public void start(BiConsumer<String, Object> telemetryFunc) {
+    public void start() {
         
     }
-
 
     private InterruptableAction runningSpecimenSlideAction = null;
     // class instead of primitive to allow nullability
     private Integer holdingSpecimenSlidePos = null;
-    public void run(RunData data, BiConsumer<String, Object> telemetryFunc) {
+    public void run(RunData data) {
         // toggle manual verticals (gp2)
         if (data.currentGamepadTwo.dpad_left && !data.previousGamepadTwo.dpad_left){
             manualVerticalMode = !manualVerticalMode;
@@ -92,7 +91,7 @@ public class VerticalSlides extends HardwareMechanism {
 
         // vertical arm (gp 2)
         float a = data.currentGamepadTwo.right_trigger - data.currentGamepadTwo.left_trigger;
-        telemetryFunc.accept("Vertical Arm Power", a);
+        telemetry.accept("Vertical Arm Power", a);
 
         // specimen slide ctrl (gp2)
         if (runningSpecimenSlideAction == null){
@@ -102,7 +101,7 @@ public class VerticalSlides extends HardwareMechanism {
                 if (!ascentMode){
                     //LimiterState lim = typedRobot.getSpecimenSlideLimiterState();
                     LimiterState lim = LimiterState.NONE;
-                    telemetryFunc.accept("Limiter State", lim);
+                    telemetry.accept("Limiter State", lim);
                     //if(a == 0) a = 0.005f;
                     setSpecimenSlideMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     if(lim == LimiterState.NEAR) setSpecimenSlidePower(Math.max(0, a));
@@ -132,7 +131,7 @@ public class VerticalSlides extends HardwareMechanism {
         if (manualVerticalMode && ascentMode) {
             //LimiterState lim = typedRobot.getRearVerticalSlideLimiterState();
             LimiterState lim = LimiterState.NONE;
-            telemetryFunc.accept("Limiter State", lim);
+            telemetry.accept("Limiter State", lim);
             // at lower limit: only allow positive speeds
             if(lim == LimiterState.NEAR) setRearVerticalArmPower(Math.max(0, a));
             // at upper limit: only allow negative speeds
@@ -140,7 +139,7 @@ public class VerticalSlides extends HardwareMechanism {
             if(lim == LimiterState.NONE) setRearVerticalArmPower(a);
         }
 
-        telemetryFunc.accept("Slides In Manual Mode", manualVerticalMode);
+        telemetry.accept("Slides In Manual Mode", manualVerticalMode);
     }
 
     public InterruptableAction roadrunnerMoveRearVerticalSlidesToHeight(double height){
