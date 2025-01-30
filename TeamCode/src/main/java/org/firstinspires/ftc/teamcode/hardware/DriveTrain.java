@@ -7,10 +7,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcontroller.teamcode.GamepadButtons;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.teamcode.misc.Pose;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 public class DriveTrain extends HardwareMechanism {
@@ -109,6 +112,17 @@ public class DriveTrain extends HardwareMechanism {
         if (data.currentGamepadOne.dpad_down && !data.previousGamepadOne.dpad_down && dashboardEnabled) {
             currentSpeedMode = SPEEDS.CUSTOM_FTC_DASHBOARD;
         }
+    }
+
+    public List<GamepadButtons> getUsedButtons() {
+        return Arrays.asList(
+                GamepadButtons.GP1_LEFT_JOYSTICK,
+                GamepadButtons.GP1_RIGHT_JOYSTICK,
+                GamepadButtons.GP1_DPAD_RIGHT,
+                GamepadButtons.GP1_DPAD_UP,
+                GamepadButtons.GP1_DPAD_LEFT,
+                GamepadButtons.GP1_DPAD_DOWN
+        );
     }
 
     private enum driveMotorName { // expecting to be same for forseeable future

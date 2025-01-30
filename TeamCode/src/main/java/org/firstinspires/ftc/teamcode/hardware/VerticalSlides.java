@@ -12,10 +12,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcontroller.teamcode.GamepadButtons;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.teamcode.LimiterState;
 import org.firstinspires.ftc.teamcode.rr.InterruptableAction;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 // note about this class: there's a strong argument to be made that rear and specimen slides
@@ -144,6 +147,18 @@ public class VerticalSlides extends HardwareMechanism {
         }
 
         telemetry.accept("Slides In Manual Mode", manualVerticalMode);
+    }
+
+    @Override
+    public List<GamepadButtons> getUsedButtons() {
+        return Arrays.asList(
+                GamepadButtons.GP2_DPAD_LEFT,
+                GamepadButtons.GP2_DPAD_DOWN,
+                GamepadButtons.GP2_DPAD_UP,
+                GamepadButtons.GP2_DPAD_RIGHT,
+                GamepadButtons.GP2_LEFT_TRIGGER,
+                GamepadButtons.GP2_RIGHT_TRIGGER
+        );
     }
 
     public InterruptableAction roadrunnerMoveRearVerticalSlidesToHeight(double height){

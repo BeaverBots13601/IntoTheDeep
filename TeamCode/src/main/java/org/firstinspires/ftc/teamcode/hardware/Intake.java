@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcontroller.teamcode.GamepadButtons;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
@@ -172,9 +173,12 @@ public class Intake extends HardwareMechanism {
         setHorizontalArmPower(val);
     }
 
-    @Override
-    public List<String> getUsedButtons() {
-        return Arrays.asList("", "");
+    public List<GamepadButtons> getUsedButtons() {
+        return Arrays.asList(
+                GamepadButtons.GP1_TRIANGLE,
+                GamepadButtons.GP1_RIGHT_TRIGGER,
+                GamepadButtons.GP1_LEFT_TRIGGER
+        );
     }
 
     public void reverseIntake(){

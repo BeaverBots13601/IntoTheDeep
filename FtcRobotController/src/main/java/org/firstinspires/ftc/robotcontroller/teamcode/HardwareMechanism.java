@@ -41,10 +41,9 @@ public abstract class HardwareMechanism {
     abstract public void run(RunData data);
 
     /**
-     *
-     * @return
+     * @return The list of all GamepadButtons this hardware mechanism uses in run().
      */
-    abstract public List<String> getUsedButtons();
+    abstract public List<GamepadButtons> getUsedButtons();
 
     // static utility members
     // todo make me protected once refactor complete

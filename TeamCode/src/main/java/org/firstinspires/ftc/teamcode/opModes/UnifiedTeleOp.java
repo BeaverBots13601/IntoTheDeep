@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcontroller.teamcode.GamepadButtons;
 import org.firstinspires.ftc.teamcode.BaseRobot;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanismClassManager;
@@ -36,7 +37,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
     // Manually added exceptions to bypass button duplication checks.
     // To add an exception, add the button in lowercase to the array (i.e. "left_bumper")
-    private static final List<String> buttonDuplicationExceptions = Arrays.asList(new String[]{});
+    private static final List<GamepadButtons> buttonDuplicationExceptions = Arrays.asList();
     public void runOpMode() {
         robot = new BaseRobot(this);
 
@@ -50,13 +51,13 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
 
         // get all the classes and instantiate & keep the ones matching HardwareMechanism
         List<Class<HardwareMechanism>> classes = HardwareMechanismClassManager.getMechanisms();
-        HashSet<String> buttons = new HashSet<>();
+        HashSet<GamepadButtons> buttons = new HashSet<>();
         for (Class<HardwareMechanism> clazz : classes){
             try {
                 HardwareMechanism mech = clazz.getDeclaredConstructor(HardwareMap.class, HardwareMechanism.InitData.class, BiConsumer.class).newInstance(hardwareMap, data, (BiConsumer<String, Object>) robot::writeToTelemetry);
                 // we do this sanity checking before determining whether the class is valid to catch issues earlier in dev
-                for (String button : mech.getUsedButtons()){
-                    if (!buttons.add(button.toLowerCase()) && !buttonDuplicationExceptions.contains(button.toLowerCase())){
+                for (GamepadButtons button : mech.getUsedButtons()){
+                    if (!buttons.add(button) && !buttonDuplicationExceptions.contains(button)){
                         // button is already in array & isn't in the exception list
                         throw new RuntimeException("WARNING! Duplicate button detected. Button: " + button + ". If this was intentional, you must add the button to the exception list.");
                     }

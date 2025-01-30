@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcontroller.teamcode.GamepadButtons;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 public class FlipBar extends HardwareMechanism {
@@ -67,6 +70,14 @@ public class FlipBar extends HardwareMechanism {
                 specimenClawDown = true;
             }
         }
+    }
+
+    @Override
+    public List<GamepadButtons> getUsedButtons() {
+        return Arrays.asList(
+                GamepadButtons.GP2_SQUARE,
+                GamepadButtons.GP2_CIRCLE
+        );
     }
 
     public void closeSpecimenClaw(){ specimenClawServo.setPosition(.52); }
