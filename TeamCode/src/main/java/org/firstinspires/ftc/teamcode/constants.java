@@ -2,6 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import java.util.List;
 
 @Config
 public class constants {
@@ -34,4 +38,16 @@ public class constants {
 
     // disable roadrunner tuning opmodes
     public static final boolean DISABLE_TUNING_OPMODES = true;
+
+    /**
+     * Enables bulk reads which allow faster hardware call times.
+     * Set to auto currently but if speed becomes an issue this can be manually configured.
+     * TODO: Re-home me.
+     */
+    public static void initBulkReads(HardwareMap hardwareMap){
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+    }
 }

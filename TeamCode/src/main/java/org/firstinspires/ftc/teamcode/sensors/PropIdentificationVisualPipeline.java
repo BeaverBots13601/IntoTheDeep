@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.sensors;
 
 import org.firstinspires.ftc.teamcode.constants;
 import org.opencv.core.Core;
@@ -7,8 +7,14 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+/**
+ * To pipeline to be attached to a camera using {@link OpenCvCamera#setPipeline(OpenCvPipeline)}.
+ * <p>
+ * TODO: Probably convert to a full SensorDevice?
+ */
 public class PropIdentificationVisualPipeline extends OpenCvPipeline {
     //    Changes how "zoomed-in" the camera sees
     static final double SQUARE_SIZE_PX = 90; // og 75

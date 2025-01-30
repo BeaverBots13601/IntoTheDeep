@@ -8,11 +8,14 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcontroller.teamcode.GamepadButtons;
-import org.firstinspires.ftc.teamcode.BaseRobot;
+import org.firstinspires.ftc.teamcode.TelemetryManager;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanismClassManager;
 import org.firstinspires.ftc.teamcode.Globals;
 import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
+import org.firstinspires.ftc.teamcode.SensorDevice;
+import org.firstinspires.ftc.teamcode.constants;
+import org.firstinspires.ftc.teamcode.sensors.IMUSensor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +31,6 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     protected HardwareMechanism.DriveMode orientationMode = HardwareMechanism.DriveMode.ROBOT; // override me
     protected TeamColor teamColor = TeamColor.BLUE; // override me
     protected boolean allowBaskets = false; // override me
-    private BaseRobot robot;
     private Gamepad currentGamepadOne = new Gamepad();
     private Gamepad previousGamepadOne = new Gamepad();
     private Gamepad currentGamepadTwo = new Gamepad();
@@ -36,17 +38,17 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
     private ArrayList<HardwareMechanism> mechanisms = new ArrayList<>();
 
     // Manually added exceptions to bypass button duplication checks.
-    // To add an exception, add the button in lowercase to the array (i.e. "left_bumper")
     private static final List<GamepadButtons> buttonDuplicationExceptions = Arrays.asList();
     public void runOpMode() {
-        robot = new BaseRobot(this);
+        constants.initBulkReads(hardwareMap);
+        TelemetryManager robot = new TelemetryManager(telemetry);
+        IMUSensor imu = new IMUSensor(hardwareMap, new SensorDevice.SensorInitData(), robot::writeToTelemetry);
 
         // InitData
         HardwareMechanism.InitData data = new HardwareMechanism.InitData();
         data.allowBaskets = allowBaskets;
         data.teamColor = teamColor;
         data.driveMode = orientationMode;
-        data.imuAngleRad = robot.getImuAngle();
         data.dashboardEnabled = robot.isDashboardEnabled();
 
         // get all the classes and instantiate & keep the ones matching HardwareMechanism
@@ -131,7 +133,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
             runData.previousGamepadOne = previousGamepadOne;
             runData.currentGamepadTwo = currentGamepadTwo;
             runData.previousGamepadTwo = previousGamepadTwo;
-            runData.imuAngleRad = robot.getImuAngle();
+            runData.imuAngleRad = imu.poll();
 
             for (HardwareMechanism mechanism : mechanisms){
                 mechanism.run(runData);

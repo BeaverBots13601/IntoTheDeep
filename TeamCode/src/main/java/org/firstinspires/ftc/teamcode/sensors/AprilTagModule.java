@@ -1,6 +1,8 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.sensors;
 
 import android.util.Size;
+
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
@@ -8,6 +10,8 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.SensorDevice;
+import org.firstinspires.ftc.teamcode.misc.AprilTagData;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.VisionPortalImpl;
 import org.firstinspires.ftc.vision.VisionProcessor;
@@ -18,17 +22,31 @@ import org.openftc.easyopencv.OpenCvCamera;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
-public class AprilTagModule {
-    private final AprilTagProcessor aprilTag;
-    private final VisionPortalEx visionPortal;
-    private final OpenCvCamera camera;
+/**
+ * Handles the scanning and recognition of AprilTags through a dumb webcam.
+ * <p>
+ * See also Limelight.
+ */
+public class AprilTagModule extends SensorDevice<List<AprilTagData>> {
+    // magic numbers
+    private static final int cameraWidth = 1280;
+    private static final int cameraHeight = 720;
 
-    /**
-     * Handles the scanning and recognition of AprilTags, in addition to the setup process for the camera.
-     * @param cameraNameObject The WebcamName object of the camera.
-     */
-    public AprilTagModule(WebcamName cameraNameObject, int cameraWidth, int cameraHeight){
+    private AprilTagProcessor aprilTag;
+    private VisionPortalEx visionPortal;
+    private OpenCvCamera camera;
+
+    public AprilTagModule(HardwareMap hardwareMap, SensorInitData initData, BiConsumer<String, Object> telemetryFunc){
+        super(hardwareMap, initData, telemetryFunc);
+        WebcamName cameraNameObject;
+        try {
+            cameraNameObject = hardwareMap.get(WebcamName.class, "camera");
+        } catch (Exception e) {
+            available = false;
+            return;
+        }
         aprilTag = new AprilTagProcessor.Builder()
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 .setTagLibrary(AprilTagGameDatabase.getCurrentGameTagLibrary())
@@ -37,6 +55,7 @@ public class AprilTagModule {
                 .build();
 
         VisionPortalEx.Builder builder = new VisionPortalEx.Builder();
+
         builder.setCamera(cameraNameObject);
         builder.setCameraResolution(new Size(cameraWidth, cameraHeight));
         builder.enableLiveView(true);
@@ -46,13 +65,17 @@ public class AprilTagModule {
 
         // WARNING: Non-standard function added by us.
         camera = visionPortal.getActiveCameraRaw();
+
+        available = true;
     }
+
+    public void start() {}
 
     /**
      * Takes the current camera view and returns information about all visible AprilTags.
      * @return An array of objects, each signifying a detection of an AprilTag and containing data about it.
      */
-    public ArrayList<AprilTagData> updateAprilTagData(){
+    public List<AprilTagData> poll(){
         ArrayList<AprilTagData> data = new ArrayList<>();
         for(AprilTagDetection i : aprilTag.getDetections()){
             data.add(new AprilTagData(i.id, i.ftcPose.y, i.hamming));

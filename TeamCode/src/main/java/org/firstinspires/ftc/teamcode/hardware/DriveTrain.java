@@ -40,11 +40,7 @@ public class DriveTrain extends HardwareMechanism {
         orientationMode = data.driveMode;
         dashboardEnabled = data.dashboardEnabled;
 
-        if(constants.ROBOT_HEADING != 0){
-            referenceAngle = constants.ROBOT_HEADING;
-        } else {
-            referenceAngle = data.imuAngleRad;
-        }
+        referenceAngle = constants.ROBOT_HEADING; // saved from auto, or 0 by default.
 
         driveMotors = new DcMotorEx[driveMotorName.values().length];
 

@@ -79,7 +79,6 @@ public abstract class HardwareMechanism {
         public TeamColor teamColor;
         public boolean allowBaskets;
         public DriveMode driveMode;
-        public double imuAngleRad;
         public boolean dashboardEnabled;
     }
 

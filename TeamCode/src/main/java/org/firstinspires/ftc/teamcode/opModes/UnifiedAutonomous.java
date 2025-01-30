@@ -17,13 +17,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.BaseRobot;
+import org.firstinspires.ftc.teamcode.TelemetryManager;
+import org.firstinspires.ftc.teamcode.SensorDevice;
 import org.firstinspires.ftc.teamcode.hardware.FlipBar;
 import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.VerticalSlides;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
-import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline;
-import org.firstinspires.ftc.teamcode.vision.PropIdentificationVisualPipeline.PropLocation;
+import org.firstinspires.ftc.teamcode.sensors.Limelight;
+import org.firstinspires.ftc.teamcode.sensors.PropIdentificationVisualPipeline;
+import org.firstinspires.ftc.teamcode.sensors.PropIdentificationVisualPipeline.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism.InitData;
 
@@ -51,15 +53,18 @@ public class UnifiedAutonomous extends LinearOpMode {
     private Intake intake;
     private FlipBar flipBar;
     private VerticalSlides verticals;
+    private Limelight limelight;
     public void runOpMode(){
+        constants.initBulkReads(hardwareMap);
         constants.ROBOT_HEADING = 0;
         if(currentLocation == null) currentLocation = Locations.Unknown;
         // Example autonomous code that can be used. Don't be afraid to expand or remodel it as needed
-        BaseRobot robot = new BaseRobot(this);
+        TelemetryManager robot = new TelemetryManager(telemetry);
         intake = new Intake(hardwareMap, new InitData(), robot::writeToTelemetry);
         flipBar = new FlipBar(hardwareMap, new InitData(), robot::writeToTelemetry);
         flipBar.closeSpecimenClaw();
         verticals = new VerticalSlides(hardwareMap, new InitData(), robot::writeToTelemetry);
+        limelight = new Limelight(hardwareMap, new SensorDevice.SensorInitData(), robot::writeToTelemetry);
 
         /* !! This code uses AprilTags to determine where we are starting on the field.
         Note that code segments like these aren't always going to be useful; don't feel obligated to
@@ -107,12 +112,12 @@ public class UnifiedAutonomous extends LinearOpMode {
 
         if(currentLocation == Locations.Unknown) {
             // limelight apriltag
-            List<LLResultTypes.FiducialResult> tags = robot.getLastLimelightAprilTagsRaw();
+            List<LLResultTypes.FiducialResult> tags = limelight.poll();
             int iterations2 = 0;
             while (tags.size() == 0 && iterations2 < 500) {
                 sleep(10);
                 iterations2++;
-                tags = robot.getLastLimelightAprilTagsRaw();
+                tags = limelight.poll();
             }
 
             @Nullable
@@ -392,8 +397,8 @@ public class UnifiedAutonomous extends LinearOpMode {
                     )
                 ));
                 // put our current heading in constants for field teleopmodes to read later
-                // todo THIS WONT WORK what if auto dies early?
-                constants.ROBOT_HEADING = robot.getImuAngle() + Math.PI; // add pi, reversed
+                // todo broken: auto ends too soon
+                //constants.ROBOT_HEADING = robot.getImuAngle() + Math.PI; // add pi, reversed
                 break;
             }
         }

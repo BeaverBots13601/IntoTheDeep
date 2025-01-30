@@ -6,16 +6,16 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.SensorDevice;
-import org.firstinspires.ftc.teamcode.vision.AprilTagData;
+import org.firstinspires.ftc.teamcode.misc.AprilTagData;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-public class Limelight extends SensorDevice<Boolean> {
+public class Limelight extends SensorDevice<List<LLResultTypes.FiducialResult>> {
     private Limelight3A limelight;
     public Limelight(HardwareMap hardwareMap, SensorInitData initData, BiConsumer<String, Object> telemetryFunc) {
-        super(telemetryFunc);
+        super(hardwareMap, initData, telemetryFunc);
         try {
             limelight = hardwareMap.get(Limelight3A.class, "limelight");
         } catch (Exception e) {
@@ -24,22 +24,22 @@ public class Limelight extends SensorDevice<Boolean> {
         }
 
         limelight.pipelineSwitch(0);
-        limelight.start();
 
         available = true;
     }
 
-    @Override
     public void start() {
-
+        limelight.start();
     }
 
-    @Override
-    public Boolean poll() {
-        return null;
+    /**
+     * @return All AprilTags visible to the Limelight.
+     */
+    public List<LLResultTypes.FiducialResult> poll() {
+        return limelight.getLatestResult().getFiducialResults();
     }
 
-    public ArrayList<AprilTagData> getLastLimelightAprilTags(){
+    public ArrayList<AprilTagData> getAprilTags(){
         ArrayList<AprilTagData> out = new ArrayList<>();
 
         limelight.getLatestResult().getFiducialResults().forEach((LLResultTypes.FiducialResult a) -> out.add(new AprilTagData(a.getFiducialId(), a.getTargetPoseRobotSpace().getPosition().z, 0)));
@@ -47,16 +47,11 @@ public class Limelight extends SensorDevice<Boolean> {
         return out;
     }
 
-    // todo this limelight stuff shouldn't be here, move back
-    public List<LLResultTypes.FiducialResult> getLastLimelightAprilTagsRaw(){
-        return limelight.getLatestResult().getFiducialResults();
-    }
-
-    public void updateLimelightIMUData(double angleRad){
+    public void updateIMUData(double angleRad){
         limelight.updateRobotOrientation(angleRad);
     }
 
-    public Pose3D getLimelightPositionalData() {
+    public Pose3D getPositionalData() {
         return limelight.getLatestResult().getBotpose_MT2();
     }
 }
