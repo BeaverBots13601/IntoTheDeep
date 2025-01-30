@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
@@ -38,6 +39,12 @@ public abstract class HardwareMechanism {
      * @param data Relevant data for the class.
      */
     abstract public void run(RunData data);
+
+    /**
+     *
+     * @return
+     */
+    abstract public List<String> getUsedButtons();
 
     // static utility members
     // todo make me protected once refactor complete

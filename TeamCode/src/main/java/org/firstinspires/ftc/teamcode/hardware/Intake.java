@@ -18,11 +18,13 @@ import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism;
 import org.firstinspires.ftc.robotcontroller.teamcode.TeamColor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 
 public class Intake extends HardwareMechanism {
     // magic numbers
+    // we use multiple results to reduce false negatives. 3 works well
     private static final int numResultsToUse = 3;
     private static final int CALIBRATED_HORIZONTAL_SLIDE_LENGTH_TICKS = 1950;
 
@@ -168,6 +170,11 @@ public class Intake extends HardwareMechanism {
         double val = data.currentGamepadOne.right_trigger - data.currentGamepadOne.left_trigger;
         telemetry.accept("Horizontal Arm Power", val);
         setHorizontalArmPower(val);
+    }
+
+    @Override
+    public List<String> getUsedButtons() {
+        return Arrays.asList("", "");
     }
 
     public void reverseIntake(){
