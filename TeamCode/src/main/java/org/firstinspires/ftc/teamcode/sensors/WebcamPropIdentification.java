@@ -19,7 +19,10 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.function.BiConsumer;
 
 /**
- * TODO: Write me
+ * Handles scanning for a colored Team Prop within three regions. The regions it is scanning are
+ * visible within FTCDashboard.
+ * <p>
+ * See also Limelight.
  */
 public class WebcamPropIdentification extends SensorDevice<PropLocation> {
     // magic numbers
@@ -53,7 +56,7 @@ public class WebcamPropIdentification extends SensorDevice<PropLocation> {
         }
 
         teamColor = initData.teamColor;
-        pipeline = new Pipeline();
+        pipeline = new Pipeline(teamColor);
         camera.setPipeline(pipeline);
 
         // Add to dashboard
@@ -109,104 +112,96 @@ public class WebcamPropIdentification extends SensorDevice<PropLocation> {
                 new Point(cameraWidthPx - detectionBoxOffsetSidesPx, cameraHeightPx / 2.0 + squareSizePx / 2.0)
         );
 
+        // color!
+        private final Scalar purple = new Scalar(255, 0, 255);
+        private final Scalar colorScalar;
+
+        public Pipeline(TeamColor teamColor){
+            if(teamColor == TeamColor.BLUE){
+                colorScalar = new Scalar(0, 0, 255); // blue
+            } else {
+                colorScalar = new Scalar(255, 0, 0); // red
+            }
+        }
+
         public Mat processFrame(Mat input) {
             Imgproc.cvtColor(input, hsv, Imgproc.COLOR_RGB2HSV);
 
             Mat box;
+            double leftPercentage;
+            double centerPercentage;
+            double rightPercentage;
 
-            // TODO: Minimize the branching that occurs here
             if(teamColor == TeamColor.BLUE){
                 // todo figure out what exactly this func does - grey out everything outside scalar range?
                 Core.inRange(hsv, blueHSVLow, blueHSVHigh, grey);
                 box = grey.submat(LeftROI);
-                double leftBluePercentage = Core.sumElems(box).val[0] / LeftROI.area() / 255;
+                leftPercentage = Core.sumElems(box).val[0] / LeftROI.area() / 255;
 
                 Core.inRange(hsv, blueHSVLow, blueHSVHigh, grey);
                 box = grey.submat(CenterROI);
-                double centerBluePercentage = Core.sumElems(box).val[0] / CenterROI.area() / 255;
+                centerPercentage = Core.sumElems(box).val[0] / CenterROI.area() / 255;
 
                 Core.inRange(hsv, blueHSVLow, blueHSVHigh, grey);
                 box = grey.submat(RightROI);
-                double rightBluePercentage = Core.sumElems(box).val[0] / RightROI.area() / 255;
-
-                double max = Math.max(leftBluePercentage, Math.max(centerBluePercentage, rightBluePercentage));
-                // The box most detected is made purple
-                if(max <= unknownColorThresholdPercent){
-                    propLocation = PropLocation.UNKNOWN;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(0, 0, 255), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(0, 0, 255), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(0, 0, 255), 3);
-                } else if (max == leftBluePercentage) {
-                    propLocation = PropLocation.LEFT;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(255, 0, 255), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(0, 0, 255), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(0, 0, 255), 3);
-                } else if (max == centerBluePercentage) {
-                    propLocation = PropLocation.CENTER;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(0, 0, 255), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(255, 0, 255), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(0, 0, 255), 3);
-                } else if (max == rightBluePercentage) {
-                    propLocation = PropLocation.RIGHT;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(0, 0, 255), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(0, 0, 255), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(255, 0, 255), 3);
-                }
+                rightPercentage = Core.sumElems(box).val[0] / RightROI.area() / 255;
             } else {
                 // must be red
                 // left stuff
                 Core.inRange(hsv, redHSVLow1, redHSVHigh1, grey);
                 box = grey.submat(LeftROI);
-                double leftRedPercentage = Core.sumElems(box).val[0] / LeftROI.area() / 255;
+                leftPercentage = Core.sumElems(box).val[0] / LeftROI.area() / 255;
 
                 Core.inRange(hsv, redHSVLow2, redHSVHigh2, grey);
                 box = grey.submat(LeftROI);
-                leftRedPercentage += leftRedPercentage + Core.sumElems(box).val[0] / LeftROI.area() / 255;
-                leftRedPercentage /= 2.0;
+                leftPercentage += leftPercentage + Core.sumElems(box).val[0] / LeftROI.area() / 255;
+                leftPercentage /= 2.0;
 
                 // center stuff
                 Core.inRange(hsv, redHSVLow1, redHSVHigh1, grey);
                 box = grey.submat(CenterROI);
-                double centerRedPercentage = Core.sumElems(box).val[0] / CenterROI.area() / 255;
+                centerPercentage = Core.sumElems(box).val[0] / CenterROI.area() / 255;
 
                 Core.inRange(hsv, redHSVLow2, redHSVHigh2, grey);
                 box = grey.submat(CenterROI);
-                centerRedPercentage += centerRedPercentage + Core.sumElems(box).val[0] / CenterROI.area() / 255;
-                centerRedPercentage /= 2.0;
+                centerPercentage += centerPercentage + Core.sumElems(box).val[0] / CenterROI.area() / 255;
+                centerPercentage /= 2.0;
 
                 // right stuff
                 Core.inRange(hsv, redHSVLow1, redHSVHigh1, grey);
                 box = grey.submat(RightROI);
-                double rightRedPercentage = Core.sumElems(box).val[0] / RightROI.area() / 255;
+                rightPercentage = Core.sumElems(box).val[0] / RightROI.area() / 255;
 
                 Core.inRange(hsv, redHSVLow2, redHSVHigh2, grey);
                 box = grey.submat(RightROI);
-                rightRedPercentage += rightRedPercentage + Core.sumElems(box).val[0] / RightROI.area() / 255;
-                rightRedPercentage /= 2.0;
-
-                double max = Math.max(leftRedPercentage, Math.max(centerRedPercentage, rightRedPercentage));
-                if(max <= unknownColorThresholdPercent){
-                    propLocation = PropLocation.UNKNOWN;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(255, 0, 0), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(255, 0, 0), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(255, 0, 0), 3);
-                } else if (max == leftRedPercentage) {
-                    propLocation = PropLocation.LEFT;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(255, 0, 255), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(255, 0, 0), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(255, 0, 0), 3);
-                } else if (max == centerRedPercentage) {
-                    propLocation = PropLocation.CENTER;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(255, 0, 0), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(255, 0, 255), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(255, 0, 0), 3);
-                } else if (max == rightRedPercentage) {
-                    propLocation = PropLocation.RIGHT;
-                    Imgproc.rectangle(input, LeftROI, new Scalar(255, 0, 0), 3);
-                    Imgproc.rectangle(input, CenterROI, new Scalar(255, 0, 0), 3);
-                    Imgproc.rectangle(input, RightROI, new Scalar(255, 0, 255), 3);
-                }
+                rightPercentage += rightPercentage + Core.sumElems(box).val[0] / RightROI.area() / 255;
+                rightPercentage /= 2.0;
             }
+
+            // Display to the user and save the detection to variable
+            double max = Math.max(leftPercentage, Math.max(centerPercentage, rightPercentage));
+            if(max <= unknownColorThresholdPercent){
+                propLocation = PropLocation.UNKNOWN;
+                Imgproc.rectangle(input, LeftROI, colorScalar, 3);
+                Imgproc.rectangle(input, CenterROI, colorScalar, 3);
+                Imgproc.rectangle(input, RightROI, colorScalar, 3);
+            } else if (max == leftPercentage) {
+                propLocation = PropLocation.LEFT;
+                Imgproc.rectangle(input, LeftROI, purple, 3);
+                Imgproc.rectangle(input, CenterROI, colorScalar, 3);
+                Imgproc.rectangle(input, RightROI, colorScalar, 3);
+            } else if (max == centerPercentage) {
+                propLocation = PropLocation.CENTER;
+                Imgproc.rectangle(input, LeftROI, colorScalar, 3);
+                Imgproc.rectangle(input, CenterROI, purple, 3);
+                Imgproc.rectangle(input, RightROI, colorScalar, 3);
+            } else if (max == rightPercentage) {
+                propLocation = PropLocation.RIGHT;
+                Imgproc.rectangle(input, LeftROI, colorScalar, 3);
+                Imgproc.rectangle(input, CenterROI, colorScalar, 3);
+                Imgproc.rectangle(input, RightROI, purple, 3);
+            }
+
             return input;
         }
     }
