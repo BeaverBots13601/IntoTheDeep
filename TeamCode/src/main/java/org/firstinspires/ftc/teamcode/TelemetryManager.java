@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /*
     TODO: Build web-tool that allows robot configuration i.e driver station (ftc-dash)
+    TODO: Add a modification to ftc-dash allowing multiple camera sources.
  */
 
 public class TelemetryManager {
@@ -17,9 +18,6 @@ public class TelemetryManager {
     public TelemetryManager(Telemetry telemetry) {
         this.telemetry = telemetry;
         this.telemetry.setMsTransmissionInterval(constants.TELEMETRY_MS_TRANSMISSION_INTERVAL);
-
-        writeToTelemetry(">", "Hardware Initialized");
-        updateTelemetry();
     }
 
     public void writeToTelemetry(String caption, Object value) {

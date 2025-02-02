@@ -26,6 +26,7 @@ import java.util.function.BiConsumer;
  */
 public class AprilTagModule extends SensorDevice<List<AprilTagData>> {
     // magic numbers
+    private static final String cameraName = "camera";
     private static final int cameraWidth = 1280;
     private static final int cameraHeight = 720;
 
@@ -36,7 +37,7 @@ public class AprilTagModule extends SensorDevice<List<AprilTagData>> {
         super(hardwareMap, initData, telemetryFunc);
         WebcamName cameraNameObject;
         try {
-            cameraNameObject = hardwareMap.get(WebcamName.class, "camera");
+            cameraNameObject = hardwareMap.get(WebcamName.class, cameraName);
         } catch (Exception e) {
             available = false;
             return;

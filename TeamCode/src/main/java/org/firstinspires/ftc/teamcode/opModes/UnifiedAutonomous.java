@@ -24,8 +24,8 @@ import org.firstinspires.ftc.teamcode.hardware.Intake;
 import org.firstinspires.ftc.teamcode.hardware.VerticalSlides;
 import org.firstinspires.ftc.teamcode.rr.MecanumDrive;
 import org.firstinspires.ftc.teamcode.sensors.Limelight;
-import org.firstinspires.ftc.teamcode.sensors.PropIdentificationVisualPipeline;
-import org.firstinspires.ftc.teamcode.sensors.PropIdentificationVisualPipeline.PropLocation;
+import org.firstinspires.ftc.teamcode.sensors.WebcamPropIdentification;
+import org.firstinspires.ftc.teamcode.sensors.WebcamPropIdentification.PropLocation;
 import org.firstinspires.ftc.teamcode.constants;
 import org.firstinspires.ftc.robotcontroller.teamcode.HardwareMechanism.InitData;
 
@@ -48,7 +48,7 @@ public class UnifiedAutonomous extends LinearOpMode {
     private PropLocation propLocation;
     protected Locations currentLocation;
     protected Path pathToFollow = Path.STANDARD;
-    private PropIdentificationVisualPipeline line;
+    private WebcamPropIdentification propId;
     private MecanumDrive roadrunnerDrive;
     private Intake intake;
     private FlipBar flipBar;
