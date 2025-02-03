@@ -51,11 +51,12 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
         data.driveMode = orientationMode;
         data.dashboardEnabled = robot.isDashboardEnabled();
 
-        // get all the classes and instantiate & keep the ones matching HardwareMechanism
+        // Get a list of all HardwareMechanism classes
         List<Class<HardwareMechanism>> classes = HardwareMechanismClassManager.getMechanisms();
         HashSet<GamepadButtons> buttons = new HashSet<>();
         for (Class<HardwareMechanism> clazz : classes){
             try {
+                // Instantiate each
                 HardwareMechanism mech = clazz.getDeclaredConstructor(HardwareMap.class, HardwareMechanism.InitData.class, BiConsumer.class).newInstance(hardwareMap, data, (BiConsumer<String, Object>) robot::writeToTelemetry);
                 // we do this sanity checking before determining whether the class is valid to catch issues earlier in dev
                 for (GamepadButtons button : mech.getUsedButtons()){
@@ -64,6 +65,7 @@ public abstract class UnifiedTeleOp extends LinearOpMode {
                         throw new RuntimeException("WARNING! Duplicate button detected. Button: " + button + ". If this was intentional, you must add the button to the exception list.");
                     }
                 }
+                // If all is well, add the mechanism to our list
                 if (mech.available) mechanisms.add(mech);
             } catch (Exception e) {
                 throw new RuntimeException(e);

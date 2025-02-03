@@ -16,6 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+/**
+ * Responsible for managing our four-wheel Mecanum drive. Includes 3 levels of variable speed.
+ */
 public class DriveTrain extends HardwareMechanism {
     private DriveMode orientationMode;
     private DcMotorEx[] driveMotors;
